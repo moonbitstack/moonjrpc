@@ -2,8 +2,6 @@
 package "moonbitstack/moonjrpc/peer"
 
 import {
-  "moonbitlang/async",
-  "moonbitlang/async/aqueue",
   "moonbitlang/async/io",
   "moonbitlang/core/json",
   "moonbitstack/moonjrpc",
@@ -21,16 +19,7 @@ pub let timeout_ms : Int32
 // Errors
 
 // Types and methods
-pub struct Peer {
-  frames : &Frames
-  methods : @moonjrpc.Methods
-  timeout_ms : Int32?
-  batch : Bool
-  lock : @async.Mutex
-  waiting : Map[String, (String, @aqueue.Queue[@moonjrpc.Message])]
-  mut next : Int64
-  mut closed : Bool
-}
+type Peer
 pub async fn Peer::call(Self, String, params? : @json.Json, timeout_ms? : Int32?) -> @json.Json
 pub fn Peer::new(&Frames, methods? : @moonjrpc.Methods, timeout_ms? : Int32?, batch? : Bool) -> Self
 pub async fn Peer::notify(Self, String, params? : @json.Json) -> Unit

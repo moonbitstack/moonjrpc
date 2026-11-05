@@ -10,7 +10,7 @@ pub let timeout_ms : Int32 = 60000
 ///
 /// A notice handler that waits on `Peer::call` waits for a reply that cannot be looked at until the
 /// handler returns. Start a task for that instead.
-pub struct Peer {
+struct Peer {
   frames : &Frames
   methods : @moonjrpc.Methods
   timeout_ms : Int32?
@@ -91,6 +91,7 @@ pub async fn Peer::call(
 }
 
 ///|
+/// Send a notice. It raises `Closed` once the other side has gone away.
 pub async fn Peer::notify(self : Peer, name : String, params? : Json) -> Unit {
   if self.closed {
     raise @moonjrpc.Closed(name~)

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en" class="at-top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>moonjrpc</title>
+<meta name="description" content="JSON-RPC 2.0 for MoonBit: messages, a method table, two-way calls and framing.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="./"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4v16M18 4v16" stroke="currentColor" stroke-width="1.5"/><path d="M6 9h10" stroke="var(--call)" stroke-width="2"/><path d="m14 6.6 3.4 2.4-3.4 2.4z" fill="var(--call)"/><path d="M18 15H8" stroke="var(--reply)" stroke-width="2"/><path d="m10 12.6-3.4 2.4 3.4 2.4z" fill="var(--reply)"/></svg><span>moonjrpc</span></a>
+  <nav class="top" aria-label="Main">
+    <a class="link" href="./" aria-current="page">Home</a>
+    <a class="link" href="guide.html">Guide</a>
+    <a class="link" href="play.html">Playground</a>
+    <a class="link" href="api.html">API</a>
+    <a class="icon" href="https://github.com/moonbitstack/moonjrpc" aria-label="GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8"/></svg></a>
+    <button class="icon" id="theme" type="button" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <h1>JSON-RPC 2.0 for MoonBit.</h1>
+      <p class="lead">A method table for one request and one answer. A peer for streams where either side may call the other. Framing for lines and Content-Length. The protocol you build on top stays yours.</p>
+      <div class="actions">
+        <a class="btn" href="guide.html">Read the guide</a>
+        <a class="btn ghost" href="play.html">Try it</a>
+        <a class="btn ghost" href="https://mooncakes.io/docs/moonbitstack/moonjrpc">mooncakes</a>
+      </div>
+      <div class="install"><pre><code>moon add moonbitstack/moonjrpc</code></pre></div>
+    </div>
+    <div class="wire" id="hero">
+      <div class="wire-bar">
+        <span class="grow">Two peers from this library, running in your browser. Open a message to see its JSON.</span>
+        <button class="btn ghost" id="replay" type="button">Replay</button>
+      </div>
+      <div class="heads"><span>editor</span><span>agent</span></div>
+      <ol class="rows"></ol>
+    </div>
+  </section>
+
+  <section class="facts" aria-label="Facts">
+    <div><b>JSON-RPC 2.0</b><span>Every error the specification names, batches included</span></div>
+    <div><b>2 framings</b><span>One message to a line, and Content-Length</span></div>
+    <div><b>4 backends</b><span>Native, JavaScript, Wasm and Wasm GC</span></div>
+  </section>
+
+  <h2>What you get</h2>
+  <section class="cards">
+    <div class="card call"><h3>One body in, one body out</h3><p>Register methods, hand <code>Methods::body</code> the text of a request, send back what it returns. Parse errors, unknown methods, bad parameters and batches are handled.</p></div>
+    <div class="card notice"><h3>Both sides can call</h3><p><code>Peer</code> matches each reply to its call, whichever side asked and in whatever order the answers come. A handler can call back in the middle of its own call.</p></div>
+    <div class="card reply"><h3>An order you can rely on</h3><p>Updates sent before an answer are handled before the caller sees that answer, and a change sent before a call is in place when the call starts.</p></div>
+    <div class="card fail"><h3>Any transport</h3><p>A transport is two functions, read and write. Lines and Content-Length come with the library; a WebSocket or an HTTP stream takes a few lines of your own.</p></div>
+  </section>
+
+  <h2>Two shapes</h2>
+  <div class="two">
+    <div>
+      <h3>One request, one answer</h3>
+      <pre data-check><code class="mbt">let methods = @moonjrpc.Methods::new()
+methods.typed("sum", (numbers : Array[Int32]) =&gt; {
+  numbers.fold(init=0, (a, b) =&gt; a + b)
+})
+let answer = methods.body(request)</code></pre>
+    </div>
+    <div>
+      <h3>A stream that stays open</h3>
+      <pre data-check><code class="mbt">let editor = @peer.Peer::new(
+  @peer.lines(editor_reads, editor_writes),
+  methods=editor_methods,
+)
+group.spawn_bg(no_wait=true, () =&gt; editor.run())
+let answer = editor.call("prompt")</code></pre>
+    </div>
+  </div>
+  <p style="margin-top:6px">Agent protocols, language servers and anything else built on JSON-RPC can sit on these two pieces. The <a href="guide.html">guide</a> walks through both.</p>
+  <div style="height:56px"></div>
+</main>
+
+<footer class="site"><div class="wrap"><span>moonjrpc, Apache-2.0</span><a href="https://github.com/moonbitstack/moonjrpc">github.com/moonbitstack/moonjrpc</a></div></footer>
+
+<script type="module">
+  import "./assets/site.js";
+  import { renderConversation } from "./assets/wire.js";
+  import { conversation } from "./engine/moonjrpc.js";
+
+  const host = document.getElementById("hero");
+  const run = async () => renderConversation(host, JSON.parse(await conversation("asks-back")));
+  document.getElementById("replay").addEventListener("click", run);
+  run();
+</script>
+</body>
+</html>

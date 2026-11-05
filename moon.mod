@@ -1,6 +1,6 @@
 name = "moonbitstack/moonjrpc"
 
-version = "0.1.2"
+version = "0.1.3"
 
 readme = "README.md"
 
@@ -30,5 +30,5 @@ description = "JSON-RPC 2.0 for MoonBit: messages, a method table, two-way calls
 source = "src"
 
 import {
-  "moonbitlang/async@0.22.5",
+  "moonbitlang/async@0.22.7",
 }

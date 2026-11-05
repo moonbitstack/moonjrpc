@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en" class="at-top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API · moonjrpc</title>
+<meta name="description" content="Every public type, function and value of moonjrpc, generated from the sources.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="./"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4v16M18 4v16" stroke="currentColor" stroke-width="1.5"/><path d="M6 9h10" stroke="var(--call)" stroke-width="2"/><path d="m14 6.6 3.4 2.4-3.4 2.4z" fill="var(--call)"/><path d="M18 15H8" stroke="var(--reply)" stroke-width="2"/><path d="m10 12.6-3.4 2.4 3.4 2.4z" fill="var(--reply)"/></svg><span>moonjrpc</span></a>
+  <nav class="top" aria-label="Main">
+    <a class="link" href="./">Home</a>
+    <a class="link" href="guide.html">Guide</a>
+    <a class="link" href="play.html">Playground</a>
+    <a class="link" href="api.html" aria-current="page">API</a>
+    <a class="icon" href="https://github.com/moonbitstack/moonjrpc" aria-label="GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8"/></svg></a>
+    <button class="icon" id="theme" type="button" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+  </nav>
+</div></header>
+
+<main class="wrap reader">
+  <nav class="side" aria-label="Reference">
+<div class="pk">moonjrpc</div>
+<a href="#moonjrpc-failed">Failed</a>
+<a href="#moonjrpc-failure">Failure</a>
+<a href="#moonjrpc-id">Id</a>
+<a href="#moonjrpc-message">Message</a>
+<a href="#moonjrpc-methods">Methods</a>
+<a href="#moonjrpc-fail">fail</a>
+<a href="#moonjrpc-internal_error">internal_error</a>
+<a href="#moonjrpc-invalid_params">invalid_params</a>
+<a href="#moonjrpc-invalid_request">invalid_request</a>
+<a href="#moonjrpc-method_not_found">method_not_found</a>
+<a href="#moonjrpc-parse_error">parse_error</a>
+<div class="pk">moonjrpc/peer</div>
+<a href="#moonjrpc-peer-frames">Frames</a>
+<a href="#moonjrpc-peer-peer">Peer</a>
+<a href="#moonjrpc-peer-content_length">content_length</a>
+<a href="#moonjrpc-peer-limit">limit</a>
+<a href="#moonjrpc-peer-lines">lines</a>
+<a href="#moonjrpc-peer-timeout_ms">timeout_ms</a>
+  </nav>
+  <article class="article">
+    <h1>API</h1>
+    <p>Version 0.1.3. Every public type, function and value, from the sources.</p>
+<h2 id="moonjrpc-top">moonjrpc</h2>
+<p>Messages and the method table. No I/O.</p>
+<section class="item" id="moonjrpc-failed">
+<h3><span class="kind">suberror</span><a href="#moonjrpc-failed">Failed</a></h3>
+<pre><code class="mbt">pub(all) suberror Failed {
+  Failed(Failure)
+  TimedOut(name~ : String, limit~ : Int32)
+  Closed(name~ : String)
+  TooLong(limit~ : Int32, got~ : Int64)
+  Malformed(String)
+}</code></pre>
+<p>What goes wrong with a call. <code>Failed</code> is the other side's error object, and a handler raises it to answer with one. <code>limit~</code> is the bound that was passed and <code>got~</code> what came.</p>
+</section>
+<section class="item" id="moonjrpc-failure">
+<h3><span class="kind">struct</span><a href="#moonjrpc-failure">Failure</a></h3>
+<pre><code class="mbt">pub(all) struct Failure {
+  code : Int32
+  message : String
+  data : Json?
+}</code></pre>
+<p>The error object of a response.</p>
+</section>
+<section class="item" id="moonjrpc-id">
+<h3><span class="kind">enum</span><a href="#moonjrpc-id">Id</a></h3>
+<pre><code class="mbt">pub(all) enum Id {
+  Num(Double, repr~ : String?)
+  Text(String)
+  Null
+}</code></pre>
+<p>A request's identifier. A number keeps the text it was written in, as core's <code>Json</code> does, so an identifier <code>Double</code> cannot hold goes back out exactly as it came in.</p>
+</section>
+<section class="item" id="moonjrpc-id-int">
+<h3><span class="kind">fn</span><a href="#moonjrpc-id-int">Id::int</a></h3>
+<pre><code class="mbt">pub fn Id::int(n : Int64) -&gt; Id</code></pre>
+<p>An identifier from an integer.</p>
+</section>
+<section class="item" id="moonjrpc-id-key">
+<h3><span class="kind">fn</span><a href="#moonjrpc-id-key">Id::key</a></h3>
+<pre><code class="mbt">pub fn Id::key(self : Id) -&gt; String</code></pre>
+<p>The same text for the same identifier, whichever side wrote it: a map key for matching replies to calls.</p>
+</section>
+<section class="item" id="moonjrpc-message">
+<h3><span class="kind">enum</span><a href="#moonjrpc-message">Message</a></h3>
+<pre><code class="mbt">pub(all) enum Message {
+  Call(id~ : Id, name~ : String, params~ : Json?)
+  Notice(name~ : String, params~ : Json?)
+  Reply(id~ : Id, result~ : Json)
+  Refusal(id~ : Id, failure~ : Failure)
+}</code></pre>
+<p>One JSON-RPC 2.0 message. A <code>Refusal</code> is a response carrying an error.</p>
+</section>
+<section class="item" id="moonjrpc-message-invalid">
+<h3><span class="kind">fn</span><a href="#moonjrpc-message-invalid">Message::invalid</a></h3>
+<pre><code class="mbt">pub fn Message::invalid(json : Json) -&gt; Message</code></pre>
+<p>The answer to something that is not a valid message: -32600, with its identifier if one can be read and null otherwise.</p>
+</section>
+<section class="item" id="moonjrpc-message-unreadable">
+<h3><span class="kind">fn</span><a href="#moonjrpc-message-unreadable">Message::unreadable</a></h3>
+<pre><code class="mbt">pub fn Message::unreadable() -&gt; Message</code></pre>
+<p>The answer to text that is not JSON: -32700, with a null identifier.</p>
+</section>
+<section class="item" id="moonjrpc-methods">
+<h3><span class="kind">struct</span><a href="#moonjrpc-methods">Methods</a></h3>
+<pre><code class="mbt">struct Methods</code></pre>
+<p>The method table: what a side does with the calls and notices it receives. Registering a name again replaces it.</p>
+</section>
+<section class="item" id="moonjrpc-methods-new">
+<h3><span class="kind">fn</span><a href="#moonjrpc-methods-new">Methods::new</a></h3>
+<pre><code class="mbt">pub fn Methods::new(on_error? : (String, Error) -&gt; Unit) -&gt; Methods</code></pre>
+<p>A table with nothing in it. <code>on_error</code> hears the errors a client is not told about: a handler's failure other than <code>Failed</code>, which goes out as -32603 with no detail, and any failure of a notice, which has no one to go to.</p>
+</section>
+<section class="item" id="moonjrpc-methods-call">
+<h3><span class="kind">fn</span><a href="#moonjrpc-methods-call">Methods::call</a></h3>
+<pre><code class="mbt">pub fn Methods::call(self : Methods, name : String, run : async (Json?) -&gt; Json) -&gt; Unit</code></pre>
+<p>Answer calls to <code>name</code> with what <code>run</code> returns. The parameters arrive as they came.</p>
+</section>
+<section class="item" id="moonjrpc-methods-notice">
+<h3><span class="kind">fn</span><a href="#moonjrpc-methods-notice">Methods::notice</a></h3>
+<pre><code class="mbt">pub fn Methods::notice(self : Methods, name : String, run : async (Json?) -&gt; Unit) -&gt; Unit</code></pre>
+<p>Run <code>run</code> for each notice named <code>name</code>. Nothing goes back.</p>
+</section>
+<section class="item" id="moonjrpc-methods-typed">
+<h3><span class="kind">fn</span><a href="#moonjrpc-methods-typed">Methods::typed</a></h3>
+<pre><code class="mbt">pub fn[P : @json.FromJson, R : ToJson] Methods::typed(self : Methods, name : String, run : async (P) -&gt; R) -&gt; Unit</code></pre>
+<p>A call whose parameters and result go through <code>FromJson</code> and <code>ToJson</code>. Parameters that do not decode are -32602, with the decoder's reason as the error's <code>data</code>.</p>
+</section>
+<section class="item" id="moonjrpc-methods-answer">
+<h3><span class="kind">fn</span><a href="#moonjrpc-methods-answer">Methods::answer</a></h3>
+<pre><code class="mbt">pub async fn Methods::answer(self : Methods, message : Message) -&gt; Message?</code></pre>
+<p>What to send back for a message: the response to a call, nothing for the rest. A method nobody registered is -32601 and a raised <code>Failed</code> goes out as it is; any other error is -32603 with no detail, because what a handler trips over is not the caller's to read.</p>
+</section>
+<section class="item" id="moonjrpc-methods-body">
+<h3><span class="kind">fn</span><a href="#moonjrpc-methods-body">Methods::body</a></h3>
+<pre><code class="mbt">pub async fn Methods::body(self : Methods, text : StringView, batch~ : Bool = true) -&gt; String?</code></pre>
+<p>One body in, one body out, by the specification: text that is not JSON is -32700, a value that is not a message is -32600, an array is a batch, and when nothing needs answering there is nothing to send. <code>batch=false</code> is for protocols that forbid arrays, as ACP does: an array is then -32600.</p>
+</section>
+<section class="item" id="moonjrpc-fail">
+<h3><span class="kind">fn</span><a href="#moonjrpc-fail">fail</a></h3>
+<pre><code class="mbt">pub fn[T] fail(code : Int32, message : String, data? : Json) -&gt; T raise Failed</code></pre>
+<p>Raise an error object: <code>fail(invalid_params, "no such file")</code>.</p>
+</section>
+<section class="item" id="moonjrpc-internal_error">
+<h3><span class="kind">let</span><a href="#moonjrpc-internal_error">internal_error</a></h3>
+<pre><code class="mbt">pub let internal_error : Int32</code></pre>
+<p>The handler failed in a way the caller is not told about.</p>
+</section>
+<section class="item" id="moonjrpc-invalid_params">
+<h3><span class="kind">let</span><a href="#moonjrpc-invalid_params">invalid_params</a></h3>
+<pre><code class="mbt">pub let invalid_params : Int32</code></pre>
+<p>The parameters are not what the method takes.</p>
+</section>
+<section class="item" id="moonjrpc-invalid_request">
+<h3><span class="kind">let</span><a href="#moonjrpc-invalid_request">invalid_request</a></h3>
+<pre><code class="mbt">pub let invalid_request : Int32</code></pre>
+<p>The value is not a valid message.</p>
+</section>
+<section class="item" id="moonjrpc-method_not_found">
+<h3><span class="kind">let</span><a href="#moonjrpc-method_not_found">method_not_found</a></h3>
+<pre><code class="mbt">pub let method_not_found : Int32</code></pre>
+<p>Nobody registered that method.</p>
+</section>
+<section class="item" id="moonjrpc-parse_error">
+<h3><span class="kind">let</span><a href="#moonjrpc-parse_error">parse_error</a></h3>
+<pre><code class="mbt">pub let parse_error : Int32</code></pre>
+<p>The text is not JSON.</p>
+</section>
+<h2 id="moonjrpc-peer-top">moonjrpc/peer</h2>
+<p>Two-way calls over any transport, and the two framings.</p>
+<section class="item" id="moonjrpc-peer-frames">
+<h3><span class="kind">trait</span><a href="#moonjrpc-peer-frames">Frames</a></h3>
+<pre><code class="mbt">pub(open) trait Frames {
+  async fn read(Self) -&gt; String?
+  async fn write(Self, String) -&gt; Unit
+}</code></pre>
+<p>How one message's text travels: a line, a WebSocket frame, an HTTP body. Implement this to carry JSON-RPC over anything.</p>
+</section>
+<section class="item" id="moonjrpc-peer-peer">
+<h3><span class="kind">struct</span><a href="#moonjrpc-peer-peer">Peer</a></h3>
+<pre><code class="mbt">struct Peer</code></pre>
+<p>One end of a conversation in which either side may call the other. Messages are taken in the order they arrive: a notice finishes before the next message is looked at, a call starts in its turn and runs on in a task of its own, and a reply wakes its caller in its turn. So the updates a side sends before answering are handled before its caller sees the answer.  A notice handler that waits on <code>Peer::call</code> waits for a reply that cannot be looked at until the handler returns. Start a task for that instead.</p>
+</section>
+<section class="item" id="moonjrpc-peer-peer-new">
+<h3><span class="kind">fn</span><a href="#moonjrpc-peer-peer-new">Peer::new</a></h3>
+<pre><code class="mbt">pub fn Peer::new(frames : &amp;Frames, methods~ : @moonjrpc.Methods = @moonjrpc.Methods::new(), timeout_ms~ : Int32? = Some(timeout_ms), batch~ : Bool = true) -&gt; Peer</code></pre>
+<p><code>timeout_ms=None</code> waits as long as it takes. <code>batch=false</code> answers an array with -32600, for protocols that forbid batches.</p>
+</section>
+<section class="item" id="moonjrpc-peer-peer-call">
+<h3><span class="kind">fn</span><a href="#moonjrpc-peer-peer-call">Peer::call</a></h3>
+<pre><code class="mbt">pub async fn Peer::call(self : Peer, name : String, params? : Json, timeout_ms~ : Int32? = self.timeout_ms) -&gt; Json</code></pre>
+<p>Send a call and wait for its answer. The other side's error object raises <code>Failed</code>; no answer in time raises <code>TimedOut</code>, and the side going away raises <code>Closed</code>. Telling the other side the call was given up on is for the protocol to do: MCP, ACP and LSP each have their own notice for it.</p>
+</section>
+<section class="item" id="moonjrpc-peer-peer-notify">
+<h3><span class="kind">fn</span><a href="#moonjrpc-peer-peer-notify">Peer::notify</a></h3>
+<pre><code class="mbt">pub async fn Peer::notify(self : Peer, name : String, params? : Json) -&gt; Unit</code></pre>
+<p>Send a notice. It raises <code>Closed</code> once the other side has gone away.</p>
+</section>
+<section class="item" id="moonjrpc-peer-peer-run">
+<h3><span class="kind">fn</span><a href="#moonjrpc-peer-peer-run">Peer::run</a></h3>
+<pre><code class="mbt">pub async fn Peer::run(self : Peer) -&gt; Unit</code></pre>
+<p>Read until the other side closes. Calls still running are waited for, so a client that writes its requests and closes its end still gets its answers; cancel this task to stop sooner.</p>
+</section>
+<section class="item" id="moonjrpc-peer-content_length">
+<h3><span class="kind">fn</span><a href="#moonjrpc-peer-content_length">content_length</a></h3>
+<pre><code class="mbt">pub fn content_length(reader : &amp;@io.Reader, writer : &amp;@io.Writer, limit~ : Int32 = limit) -&gt; &amp;Frames</code></pre>
+<p>A <code>Content-Length</code> header, a blank line, the body: the base protocol of LSP. A message over <code>limit</code> bytes raises <code>TooLong</code>.</p>
+</section>
+<section class="item" id="moonjrpc-peer-limit">
+<h3><span class="kind">let</span><a href="#moonjrpc-peer-limit">limit</a></h3>
+<pre><code class="mbt">pub let limit : Int32</code></pre>
+<p>The longest message <code>lines</code> and <code>content_length</code> take: 64 MiB. vscode-jsonrpc and the MCP SDKs set no bound, gRPC's default is 4 MiB; no common value exists, so this takes the safe side without refusing what a large tool result needs.</p>
+</section>
+<section class="item" id="moonjrpc-peer-lines">
+<h3><span class="kind">fn</span><a href="#moonjrpc-peer-lines">lines</a></h3>
+<pre><code class="mbt">pub fn lines(reader : &amp;@io.Reader, writer : &amp;@io.Writer, limit~ : Int32 = limit) -&gt; &amp;Frames</code></pre>
+<p>One message to a line: the stdio transport of MCP and ACP. Blank lines are skipped, a last line with no newline still counts, and a line over <code>limit</code> bytes raises <code>TooLong</code>.</p>
+</section>
+<section class="item" id="moonjrpc-peer-timeout_ms">
+<h3><span class="kind">let</span><a href="#moonjrpc-peer-timeout_ms">timeout_ms</a></h3>
+<pre><code class="mbt">pub let timeout_ms : Int32</code></pre>
+<p>How long <code>Peer::call</code> waits: 60 seconds, the MCP TypeScript SDK's <code>DEFAULT_REQUEST_TIMEOUT_MSEC</code>.</p>
+</section>
+  </article>
+</main>
+
+<footer class="site"><div class="wrap"><span>moonjrpc, Apache-2.0</span><a href="https://github.com/moonbitstack/moonjrpc">github.com/moonbitstack/moonjrpc</a></div></footer>
+<script type="module" src="assets/site.js"></script>
+</body>
+</html>

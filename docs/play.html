@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en" class="at-top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playground · moonjrpc</title>
+<meta name="description" content="Watch two peers talk, send your own requests and see what each framing writes. All of it runs the library in your browser.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="./"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4v16M18 4v16" stroke="currentColor" stroke-width="1.5"/><path d="M6 9h10" stroke="var(--call)" stroke-width="2"/><path d="m14 6.6 3.4 2.4-3.4 2.4z" fill="var(--call)"/><path d="M18 15H8" stroke="var(--reply)" stroke-width="2"/><path d="m10 12.6-3.4 2.4 3.4 2.4z" fill="var(--reply)"/></svg><span>moonjrpc</span></a>
+  <nav class="top" aria-label="Main">
+    <a class="link" href="./">Home</a>
+    <a class="link" href="guide.html">Guide</a>
+    <a class="link" href="play.html" aria-current="page">Playground</a>
+    <a class="link" href="api.html">API</a>
+    <a class="icon" href="https://github.com/moonbitstack/moonjrpc" aria-label="GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8"/></svg></a>
+    <button class="icon" id="theme" type="button" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+  </nav>
+</div></header>
+
+<main class="wrap" style="padding:36px 0 70px">
+  <h1 style="font-size:2rem">Playground</h1>
+  <p>Everything here is the library compiled to JavaScript, running in this page.</p>
+
+  <h2>Two peers</h2>
+  <p id="about"></p>
+  <div class="tabs" id="scenes" role="group" aria-label="Conversations"></div>
+  <div class="wire" id="wire" style="margin-top:14px">
+    <div class="wire-bar">
+      <span class="grow">Blue is a call, green a reply, violet a notice, red an error. Open a message to see its JSON.</span>
+      <button class="btn ghost" id="replay" type="button">Replay</button>
+    </div>
+    <div class="heads"><span>editor</span><span>agent</span></div>
+    <ol class="rows"></ol>
+  </div>
+
+  <h2>Send a request</h2>
+  <p class="methods">The table here has <code>sum</code>, <code>subtract</code>, <code>echo</code>, <code>no</code>, <code>boom</code> and the notice <code>log</code>. Edit the text, or start from one of these.</p>
+  <div class="tabs" id="presets" role="group" aria-label="Requests"></div>
+  <div class="two" style="margin-top:14px">
+    <div>
+      <label class="field" for="ask">Request</label>
+      <textarea id="ask" spellcheck="false"></textarea>
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="batch" checked> batch</label>
+    </div>
+    <div>
+      <div class="field">Methods::body answers</div>
+      <pre id="out" style="min-height:150px"><code></code></pre>
+    </div>
+  </div>
+
+  <h2>Framing</h2>
+  <p class="methods">What goes on the wire for one message. The length counts bytes, so try some Chinese.</p>
+  <div class="two">
+    <div>
+      <label class="field" for="frame-in">Message</label>
+      <textarea id="frame-in" spellcheck="false" style="min-height:90px">{"jsonrpc":"2.0","method":"log","params":["猫"]}</textarea>
+    </div>
+    <div>
+      <div class="field">lines</div>
+      <pre id="frame-lines"><code></code></pre>
+      <div class="field">content_length</div>
+      <pre id="frame-length"><code></code></pre>
+    </div>
+  </div>
+</main>
+
+<footer class="site"><div class="wrap"><span>moonjrpc, Apache-2.0</span><a href="https://github.com/moonbitstack/moonjrpc">github.com/moonbitstack/moonjrpc</a></div></footer>
+
+<script type="module">
+  import { escapeHtml } from "./assets/site.js";
+  import { prettyJson, renderConversation } from "./assets/wire.js";
+  import { answer, conversation, framed } from "./engine/moonjrpc.js";
+
+  const SCENES = [
+    ["call", "A call", "One call and its reply, matched by identifier."],
+    ["asks-back", "Asks back", "The agent needs something from the editor while it is answering, so it calls back in the middle of the call. Both identifiers are 1: each side counts its own calls."],
+    ["updates", "Updates first", "The agent sends three updates and then answers. Handling an update here takes longer than the answer takes to arrive, and the editor still finishes all three before its call returns."],
+    ["out-of-order", "Out of order", "Two calls go out together. The quick one is answered first, and each answer reaches the caller that asked."],
+    ["refused", "Refused", "An error the handler chose, a method nobody registered, a handler that tripped over something, and parameters that do not decode."],
+    ["timeout", "Timed out", "A call gives up after 20 ms. The answer still comes, nobody is waiting for it, and the next call works."],
+  ];
+  const REQUESTS = [
+    ["Positional", '{"jsonrpc":"2.0","id":1,"method":"subtract","params":[42,23]}'],
+    ["Named", '{"jsonrpc":"2.0","id":2,"method":"subtract","params":{"minuend":42,"subtrahend":23}}'],
+    ["Notice", '{"jsonrpc":"2.0","method":"log","params":["hello"]}'],
+    ["Your error", '{"jsonrpc":"2.0","id":3,"method":"no"}'],
+    ["Handler fails", '{"jsonrpc":"2.0","id":4,"method":"boom"}'],
+    ["Unknown method", '{"jsonrpc":"2.0","id":5,"method":"nobody"}'],
+    ["Bad parameters", '{"jsonrpc":"2.0","id":6,"method":"sum","params":["x"]}'],
+    ["Not JSON", '{"jsonrpc":"2.0","method":"foobar, "params":"bar", "baz]'],
+    ["Not a message", '{"jsonrpc":"2.0","method":1,"params":"bar"}'],
+    ["Batch", '[\n  {"jsonrpc":"2.0","id":"a","method":"sum","params":[1,2,4]},\n  {"jsonrpc":"2.0","method":"log"},\n  {"foo":"boo"},\n  {"jsonrpc":"2.0","id":"b","method":"nobody"}\n]'],
+    ["Empty batch", "[]"],
+  ];
+
+  const wire = document.getElementById("wire");
+  const about = document.getElementById("about");
+  let scene = SCENES[1];
+  async function play() {
+    about.textContent = scene[2];
+    for (const b of document.querySelectorAll("#scenes button")) b.setAttribute("aria-pressed", String(b.dataset.name === scene[0]));
+    renderConversation(wire, JSON.parse(await conversation(scene[0])));
+  }
+  for (const s of SCENES) {
+    const b = document.createElement("button");
+    b.className = "btn ghost";
+    b.type = "button";
+    b.dataset.name = s[0];
+    b.textContent = s[1];
+    b.addEventListener("click", () => {
+      scene = s;
+      play();
+    });
+    document.getElementById("scenes").append(b);
+  }
+  document.getElementById("replay").addEventListener("click", play);
+  play();
+
+  const ask = document.getElementById("ask");
+  const batch = document.getElementById("batch");
+  const out = document.querySelector("#out code");
+  async function send() {
+    const text = await answer(ask.value, batch.checked);
+    out.innerHTML = text === "" ? '<span class="empty">Nothing to send.</span>' : prettyJson(text);
+  }
+  for (const r of REQUESTS) {
+    const b = document.createElement("button");
+    b.className = "btn ghost";
+    b.type = "button";
+    b.textContent = r[0];
+    b.addEventListener("click", () => {
+      ask.value = r[1];
+      send();
+    });
+    document.getElementById("presets").append(b);
+  }
+  ask.value = REQUESTS[0][1];
+  ask.addEventListener("input", send);
+  batch.addEventListener("change", send);
+  send();
+
+  const frameIn = document.getElementById("frame-in");
+  const visible = (text) => escapeHtml(text.replaceAll("\r", "\\r").replaceAll("\n", "\\n\n"));
+  async function frame() {
+    document.querySelector("#frame-lines code").innerHTML = visible(await framed("lines", frameIn.value));
+    document.querySelector("#frame-length code").innerHTML = visible(await framed("content-length", frameIn.value));
+  }
+  frameIn.addEventListener("input", frame);
+  frame();
+</script>
+</body>
+</html>

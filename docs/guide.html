@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en" class="at-top">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide · moonjrpc</title>
+<meta name="description" content="From a first method to two-way calls and a transport of your own.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="./"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4v16M18 4v16" stroke="currentColor" stroke-width="1.5"/><path d="M6 9h10" stroke="var(--call)" stroke-width="2"/><path d="m14 6.6 3.4 2.4-3.4 2.4z" fill="var(--call)"/><path d="M18 15H8" stroke="var(--reply)" stroke-width="2"/><path d="m10 12.6-3.4 2.4 3.4 2.4z" fill="var(--reply)"/></svg><span>moonjrpc</span></a>
+  <nav class="top" aria-label="Main">
+    <a class="link" href="./">Home</a>
+    <a class="link" href="guide.html" aria-current="page">Guide</a>
+    <a class="link" href="play.html">Playground</a>
+    <a class="link" href="api.html">API</a>
+    <a class="icon" href="https://github.com/moonbitstack/moonjrpc" aria-label="GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.34c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.22 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.13 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.11.16 1.93.08 2.13.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8"/></svg></a>
+    <button class="icon" id="theme" type="button" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
+  </nav>
+</div></header>
+
+<main class="wrap reader">
+  <nav class="side" aria-label="On this page">
+    <a href="#install">Install</a>
+    <a href="#first">A first method</a>
+    <a href="#errors">Errors</a>
+    <a href="#notices">Notices and batches</a>
+    <a href="#messages">Messages as values</a>
+    <a href="#peer">Calling both ways</a>
+    <a href="#order">Order</a>
+    <a href="#failure">When a call fails</a>
+    <a href="#frames">Framing</a>
+    <a href="#transport">Your own transport</a>
+    <a href="#protocol">Building a protocol</a>
+  </nav>
+  <article class="article">
+    <h1>Guide</h1>
+    <p>From a first method to two-way calls and a transport of your own. The code below runs as written; the output is what it prints.</p>
+
+    <h2 id="install">Install</h2>
+    <pre><code>moon add moonbitstack/moonjrpc
+moon add moonbitlang/async</code></pre>
+    <p>Import the root package for messages and the method table. Import <code>peer</code> only if you call both ways.</p>
+    <pre><code>import {
+  "moonbitstack/moonjrpc",
+  "moonbitstack/moonjrpc/peer",
+  "moonbitlang/async",
+}</code></pre>
+
+    <h2 id="first">A first method</h2>
+    <p><code>typed</code> decodes the parameters and encodes the result through <code>FromJson</code> and <code>ToJson</code>. <code>body</code> takes the text of a request and returns the text of the answer.</p>
+    <pre data-check><code class="mbt">let methods = @moonjrpc.Methods::new()
+methods.typed("sum", (numbers : Array[Int32]) =&gt; {
+  numbers.fold(init=0, (a, b) =&gt; a + b)
+})
+let request =
+  #|{"jsonrpc":"2.0","id":1,"method":"sum","params":[1,2,3]}
+let answer = methods.body(request)</code></pre>
+    <pre class="out" data-check>{"jsonrpc":"2.0","id":1,"result":6}</pre>
+    <p>This is all an HTTP endpoint needs: read the POST body, call <code>body</code>, write what it returns. When it returns <code>None</code> there is nothing to send.</p>
+    <p>A handler that waits for something is written <code>async fn(params) { ... }</code>. One that does not is an arrow, as above.</p>
+
+    <h2 id="errors">Errors</h2>
+    <p><code>fail</code> answers with an error object of your choosing. The rest come from the library.</p>
+    <pre data-check><code class="mbt">methods.call("no", _ =&gt; @moonjrpc.fail(7, "said no", data=Json::string("why")))
+let refused =
+  #|{"jsonrpc":"2.0","id":1,"method":"no"}
+let unknown =
+  #|{"jsonrpc":"2.0","id":2,"method":"nobody"}</code></pre>
+    <pre class="out" data-check>{"jsonrpc":"2.0","id":1,"error":{"code":7,"message":"said no","data":"why"}}
+{"jsonrpc":"2.0","id":2,"error":{"code":-32601,"message":"Method not found"}}
+{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}</pre>
+    <table>
+      <tr><th>Input</th><th>Answer</th></tr>
+      <tr><td>Text that is not JSON</td><td>-32700</td></tr>
+      <tr><td>A value that is not a message</td><td>-32600, with its identifier if one can be read</td></tr>
+      <tr><td>A method nobody registered</td><td>-32601</td></tr>
+      <tr><td>Parameters <code>typed</code> cannot decode</td><td>-32602, with the reason in <code>data</code></td></tr>
+      <tr><td>Any other error from a handler</td><td>-32603 with no detail</td></tr>
+    </table>
+    <p>What a handler trips over is not the caller's to read. Pass <code>on_error</code> to <code>Methods::new</code> to hear it yourself; it also hears failures in notices, which have nobody else to go to.</p>
+
+    <h2 id="notices">Notices and batches</h2>
+    <p>A notice gets no answer, so <code>body</code> returns <code>None</code>. An array is a batch, answered in one array that leaves out the notices.</p>
+    <pre data-check><code class="mbt">methods.notice("log", params =&gt; logged.push(params))
+let notice =
+  #|{"jsonrpc":"2.0","method":"log","params":["hello"]}
+assert_eq(methods.body(notice), None)
+methods.call("ping", _ =&gt; Json::string("pong"))
+let batch =
+  #|[{"jsonrpc":"2.0","id":1,"method":"ping"},{"jsonrpc":"2.0","method":"log"}]</code></pre>
+    <pre class="out" data-check>[{"jsonrpc":"2.0","id":1,"result":"pong"}]</pre>
+    <p>Some protocols forbid batches. <code>methods.body(batch, batch=false)</code> refuses an array with -32600.</p>
+
+    <h2 id="messages">Messages as values</h2>
+    <p>A <code>Message</code> is a plain enum with <code>ToJson</code> and <code>FromJson</code>, for when you need to look at what is going across. The field the specification calls <code>method</code> is <code>name</code> here, because <code>method</code> is reserved in MoonBit.</p>
+    <pre data-check><code class="mbt">let call : @moonjrpc.Message = Call(
+  id=@moonjrpc.Id::int(1),
+  name="ping",
+  params=None,
+)</code></pre>
+    <pre class="out" data-check>{"jsonrpc":"2.0","id":1,"method":"ping"}</pre>
+
+    <h2 id="peer">Calling both ways</h2>
+    <p><code>@peer.Peer</code> is for transports that stay open. Each side has a method table and can call the other, even in the middle of answering a call.</p>
+    <pre data-check><code class="mbt">let (agent_reads, editor_writes) = @io.pipe()
+let (editor_reads, agent_writes) = @io.pipe()
+
+let editor_methods = @moonjrpc.Methods::new()
+editor_methods.call("read_file", _ =&gt; Json::string("hello"))
+let editor = @peer.Peer::new(
+  @peer.lines(editor_reads, editor_writes),
+  methods=editor_methods,
+)
+
+let agent_methods = @moonjrpc.Methods::new()
+let agent : Ref[@peer.Peer?] = Ref(None)
+agent_methods.call("prompt", async fn(_) {
+  let text = agent.val.unwrap().call("read_file")
+  Json::array([Json::string("the file says"), text])
+})
+agent.val = Some(
+  @peer.Peer::new(
+    @peer.lines(agent_reads, agent_writes),
+    methods=agent_methods,
+  ),
+)
+
+@async.with_task_group(async fn(group) {
+  group.spawn_bg(no_wait=true, () =&gt; editor.run())
+  group.spawn_bg(no_wait=true, () =&gt; agent.val.unwrap().run())
+  let answer = editor.call("prompt")
+})</code></pre>
+    <pre class="out" data-check>["the file says","hello"]</pre>
+    <p><code>Peer::run</code> reads until the other side closes. It waits for calls still running, so a client that writes its requests and closes its end still gets its answers. Cancel the task to stop sooner. See this conversation drawn in the <a href="play.html">playground</a>.</p>
+
+    <h2 id="order">Order</h2>
+    <p>Messages are taken in the order they arrive:</p>
+    <ul>
+      <li>A notice finishes before the next message is looked at.</li>
+      <li>A call starts in its turn and runs on in a task of its own.</li>
+      <li>A reply wakes its caller in its turn.</li>
+    </ul>
+    <p>So the updates a side sends before answering are handled before its caller sees the answer, and a change sent before a call is in place when the call starts.</p>
+    <div class="note-box">A notice handler that waits on <code>Peer::call</code> waits for a reply that cannot be looked at until the handler returns. Start a task for that call.</div>
+
+    <h2 id="failure">When a call fails</h2>
+    <p><code>Peer::call</code> raises one of three errors. The default limit is 60 seconds; <code>timeout_ms=None</code> waits as long as it takes.</p>
+    <pre data-check><code class="mbt">let said = try editor.call("slow", timeout_ms=Some(10)) catch {
+  @moonjrpc.Failed(failure) =&gt; "refused: \{failure.message}"
+  @moonjrpc.TimedOut(name~, limit~) =&gt; "\{name} took over \{limit} ms"
+  @moonjrpc.Closed(name~) =&gt; "\{name}: the other side went away"
+  _ =&gt; "something else"
+} noraise {
+  _ =&gt; "answered"
+}</code></pre>
+    <pre class="out" data-check>slow took over 10 ms</pre>
+    <p>Giving up does not tell the other side. Protocols have their own notice for that, so send it yourself. A late reply is dropped.</p>
+
+    <h2 id="frames">Framing</h2>
+    <p><code>@peer.lines</code> puts one message on a line. <code>@peer.content_length</code> writes a header with the length in bytes:</p>
+    <pre data-check><code class="mbt">let frames = @peer.content_length(nothing, writes)</code></pre>
+    <pre class="out">Content-Length: 9
+
+{"猫":1}</pre>
+    <p>Both raise <code>TooLong</code> past a limit, 64 MiB unless you pass <code>limit=</code>. Bytes that are not UTF-8 are answered like text that is not JSON.</p>
+
+    <h2 id="transport">Your own transport</h2>
+    <p>A transport is a read and a write of one message's text. Here is one over two queues; a WebSocket looks the same.</p>
+    <pre data-check><code class="mbt">struct Memory {
+  incoming : @aqueue.Queue[String]
+  outgoing : @aqueue.Queue[String]
+}
+
+impl @peer.Frames for Memory with fn read(self) {
+  Some(self.incoming.get())
+}
+
+impl @peer.Frames for Memory with fn write(self, text) {
+  self.outgoing.put(text)
+}</code></pre>
+
+    <h2 id="protocol">Building a protocol</h2>
+    <p>A protocol on top of this usually needs three things of its own:</p>
+    <ul>
+      <li>Its types, as records with <code>FromJson</code> and <code>ToJson</code>, registered through <code>typed</code>.</li>
+      <li>Its HTTP shape, if it has one. Whether an answer goes back on the POST or on a separate stream differs from protocol to protocol, so it is not here.</li>
+      <li>Its cancellation notice.</li>
+    </ul>
+    <p>Pass <code>batch=false</code> to <code>Peer::new</code> if the protocol forbids batches, and <code>timeout_ms=None</code> if a call can legitimately run for a long time.</p>
+  </article>
+</main>
+
+<footer class="site"><div class="wrap"><span>moonjrpc, Apache-2.0</span><a href="https://github.com/moonbitstack/moonjrpc">github.com/moonbitstack/moonjrpc</a></div></footer>
+<script type="module" src="assets/site.js"></script>
+</body>
+</html>

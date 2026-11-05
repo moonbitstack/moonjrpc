@@ -29,7 +29,7 @@ import {
 
 ```moonbit
 let methods = @moonjrpc.Methods::new()
-methods.typed("sum", (numbers : Array[Int]) => numbers.fold(init=0, (a, b) => a + b))
+methods.typed("sum", (numbers : Array[Int32]) => numbers.fold(init=0, (a, b) => a + b))
 methods.call("no", _ => @moonjrpc.fail(7, "said no"))
 methods.notice("log", _ => ())
 

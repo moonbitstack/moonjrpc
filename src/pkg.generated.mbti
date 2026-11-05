@@ -76,11 +76,7 @@ pub fn Message::unreadable() -> Self
 pub impl @json.FromJson for Message
 pub impl @json.ToJson for Message
 
-pub struct Methods {
-  calls : Map[String, async (@json.Json?) -> @json.Json]
-  notices : Map[String, async (@json.Json?) -> Unit]
-  on_error : ((String, Error) -> Unit)?
-}
+type Methods
 pub async fn Methods::answer(Self, Message) -> Message?
 pub async fn Methods::body(Self, StringView, batch? : Bool) -> String?
 pub fn Methods::call(Self, String, async (@json.Json?) -> @json.Json) -> Unit

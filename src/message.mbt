@@ -1,17 +1,21 @@
 ///|
-/// The error codes the specification reserves.
+/// The text is not JSON.
 pub let parse_error : Int32 = -32700
 
 ///|
+/// The value is not a valid message.
 pub let invalid_request : Int32 = -32600
 
 ///|
+/// Nobody registered that method.
 pub let method_not_found : Int32 = -32601
 
 ///|
+/// The parameters are not what the method takes.
 pub let invalid_params : Int32 = -32602
 
 ///|
+/// The handler failed in a way the caller is not told about.
 pub let internal_error : Int32 = -32603
 
 ///|

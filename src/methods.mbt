@@ -1,7 +1,7 @@
 ///|
 /// The method table: what a side does with the calls and notices it receives. Registering a name
 /// again replaces it.
-pub struct Methods {
+struct Methods {
   calls : Map[String, async (Json?) -> Json]
   notices : Map[String, async (Json?) -> Unit]
   on_error : ((String, Error) -> Unit)?
@@ -16,6 +16,7 @@ pub fn Methods::new(on_error? : (String, Error) -> Unit) -> Methods {
 }
 
 ///|
+/// Answer calls to `name` with what `run` returns. The parameters arrive as they came.
 pub fn Methods::call(
   self : Methods,
   name : String,
@@ -25,6 +26,7 @@ pub fn Methods::call(
 }
 
 ///|
+/// Run `run` for each notice named `name`. Nothing goes back.
 pub fn Methods::notice(
   self : Methods,
   name : String,
@@ -43,11 +45,11 @@ pub fn[P : @json.FromJson, R : ToJson] Methods::typed(
 ) -> Unit {
   self.call(name, async fn(params) {
     let input : P = @json.from_json(params.unwrap_or(Json::null())) catch {
-      error =>
+      JsonDecodeError((path, reason)) =>
         fail(
           invalid_params,
           "Invalid params",
-          data=Json::string(error.to_string()),
+          data=Json::string("\{path}: \{reason}"),
         )
     }
     run(input).to_json()

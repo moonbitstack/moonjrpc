@@ -2,6 +2,14 @@
 
 JSON-RPC 2.0 for MoonBit: messages, a method table, two-way calls and framing.
 
+<p>
+  <a href="https://moonbitstack.github.io/moonjrpc/"><b>Site</b></a> &middot;
+  <a href="https://moonbitstack.github.io/moonjrpc/guide.html">Guide</a> &middot;
+  <a href="https://moonbitstack.github.io/moonjrpc/play.html">Playground</a> &middot;
+  <a href="https://moonbitstack.github.io/moonjrpc/api.html">API</a> &middot;
+  <a href="https://mooncakes.io/docs/moonbitstack/moonjrpc">mooncakes</a>
+</p>
+
 ```bash
 moon add moonbitstack/moonjrpc
 ```
@@ -12,7 +20,7 @@ A method table takes one body and gives back one body, with the errors the speci
 
 ```moonbit
 let methods = @moonjrpc.Methods::new()
-methods.typed("sum", (numbers : Array[Int]) => numbers.fold(init=0, (a, b) => a + b))
+methods.typed("sum", (numbers : Array[Int32]) => numbers.fold(init=0, (a, b) => a + b))
 methods.call("no", _ => @moonjrpc.fail(7, "said no"))
 methods.notice("log", params => logged.push(params))
 
