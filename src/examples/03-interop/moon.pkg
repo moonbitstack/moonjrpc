@@ -1,0 +1,12 @@
+// The program `scripts/interop/run.mjs` talks to: other JSON-RPC implementations on its stdio.
+supported_targets = "+native"
+
+import {
+  "moonbitstack/moonjsonrpc",
+  "moonbitstack/moonjsonrpc/peer",
+  "moonbitlang/async",
+  "moonbitlang/async/stdio",
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")

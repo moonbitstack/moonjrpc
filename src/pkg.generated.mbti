@@ -1,11 +1,92 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbitstack/moonjsonrpc"
 
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+}
+
 // Values
+pub fn[T] fail(Int32, String, data? : @json.Json) -> T raise Failed
+
+pub let internal_error : Int32
+
+pub let invalid_params : Int32
+
+pub let invalid_request : Int32
+
+pub let method_not_found : Int32
+
+pub let parse_error : Int32
 
 // Errors
+#derive(Eq, @debug.Debug)
+pub(all) suberror Failed {
+  Failed(Failure)
+  TimedOut(name~ : String, limit~ : Int32)
+  Closed(name~ : String)
+  TooLong(limit~ : Int32, got~ : Int64)
+  Malformed(String)
+}
+pub fn Failed::equal(Self, Self) -> Bool
+pub fn Failed::not_equal(Self, Self) -> Bool
+pub fn Failed::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) struct Failure {
+  code : Int32
+  message : String
+  data : @json.Json?
+}
+pub fn Failure::equal(Self, Self) -> Bool
+pub fn Failure::not_equal(Self, Self) -> Bool
+pub fn Failure::to_json(Self) -> @json.Json
+pub fn Failure::to_repr(Self) -> @debug.Repr
+pub impl @json.ToJson for Failure
+
+#derive(Eq, @debug.Debug)
+pub(all) enum Id {
+  Num(Double, repr~ : String?)
+  Text(String)
+  Null
+}
+pub fn Id::equal(Self, Self) -> Bool
+pub fn Id::int(Int64) -> Self
+pub fn Id::key(Self) -> String
+pub fn Id::not_equal(Self, Self) -> Bool
+pub fn Id::to_json(Self) -> @json.Json
+pub fn Id::to_repr(Self) -> @debug.Repr
+pub impl @json.ToJson for Id
+
+#derive(Eq, @debug.Debug)
+pub(all) enum Message {
+  Call(id~ : Id, name~ : String, params~ : @json.Json?)
+  Notice(name~ : String, params~ : @json.Json?)
+  Reply(id~ : Id, result~ : @json.Json)
+  Refusal(id~ : Id, failure~ : Failure)
+}
+pub fn Message::equal(Self, Self) -> Bool
+pub fn Message::from_json(@json.Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Message::invalid(@json.Json) -> Self
+pub fn Message::not_equal(Self, Self) -> Bool
+pub fn Message::to_json(Self) -> @json.Json
+pub fn Message::to_repr(Self) -> @debug.Repr
+pub fn Message::unreadable() -> Self
+pub impl @json.FromJson for Message
+pub impl @json.ToJson for Message
+
+pub struct Methods {
+  calls : Map[String, async (@json.Json?) -> @json.Json]
+  notices : Map[String, async (@json.Json?) -> Unit]
+  on_error : ((String, Error) -> Unit)?
+}
+pub async fn Methods::answer(Self, Message) -> Message?
+pub async fn Methods::body(Self, StringView, batch? : Bool) -> String?
+pub fn Methods::call(Self, String, async (@json.Json?) -> @json.Json) -> Unit
+pub fn Methods::new(on_error? : (String, Error) -> Unit) -> Self
+pub fn Methods::notice(Self, String, async (@json.Json?) -> Unit) -> Unit
+pub fn[P : @json.FromJson, R : @json.ToJson] Methods::typed(Self, String, async (P) -> R) -> Unit
 
 // Type aliases
 

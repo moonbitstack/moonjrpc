@@ -27,3 +27,7 @@ keywords = [
 description = "JSON-RPC 2.0 for MoonBit: messages, a method table, two-way calls and framing."
 
 source = "src"
+
+import {
+  "moonbitlang/async@0.22.5",
+}

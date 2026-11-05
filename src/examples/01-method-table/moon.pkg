@@ -1,0 +1,9 @@
+// A method table answering bodies: one text in, one text out.
+supported_targets = "+native"
+
+import {
+  "moonbitstack/moonjsonrpc",
+  "moonbitlang/async",
+}
+
+pkgtype(kind: "executable")

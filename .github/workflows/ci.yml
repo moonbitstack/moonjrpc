@@ -61,3 +61,30 @@ jobs:
       - name: interfaces are up to date
         run: |
           moon info --target all && git diff --exit-code
+
+  interop:
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: install
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - name: install the other implementations
+        run: npm install --prefix scripts/interop --no-audit --no-fund
+
+      - name: vscode-jsonrpc and json-rpc-2.0, both ways
+        run: |
+          moon build src/examples/03-interop --target native
+          node scripts/interop/run.mjs _build/native/debug/build/examples/03-interop/03-interop

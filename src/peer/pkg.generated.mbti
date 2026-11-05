@@ -1,0 +1,45 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonjsonrpc/peer"
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/aqueue",
+  "moonbitlang/async/io",
+  "moonbitlang/core/json",
+  "moonbitstack/moonjsonrpc",
+}
+
+// Values
+pub fn content_length(&@io.Reader, &@io.Writer, limit? : Int32) -> &Frames
+
+pub let limit : Int32
+
+pub fn lines(&@io.Reader, &@io.Writer, limit? : Int32) -> &Frames
+
+pub let timeout_ms : Int32
+
+// Errors
+
+// Types and methods
+pub struct Peer {
+  frames : &Frames
+  methods : @moonjsonrpc.Methods
+  timeout_ms : Int32?
+  batch : Bool
+  lock : @async.Mutex
+  waiting : Map[String, (String, @aqueue.Queue[@moonjsonrpc.Message])]
+  mut next : Int64
+  mut closed : Bool
+}
+pub async fn Peer::call(Self, String, params? : @json.Json, timeout_ms? : Int32?) -> @json.Json
+pub fn Peer::new(&Frames, methods? : @moonjsonrpc.Methods, timeout_ms? : Int32?, batch? : Bool) -> Self
+pub async fn Peer::notify(Self, String, params? : @json.Json) -> Unit
+pub async fn Peer::run(Self) -> Unit
+
+// Type aliases
+
+// Traits
+pub(open) trait Frames {
+  async fn read(Self) -> String?
+  async fn write(Self, String) -> Unit
+}

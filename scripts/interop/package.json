@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "json-rpc-2.0": "1.8.1",
+    "vscode-jsonrpc": "10.0.0"
+  }
+}
