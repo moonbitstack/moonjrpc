@@ -1,5 +1,5 @@
 ///|
-fn decoded(text : String) -> @moonjsonrpc.Message? {
+fn decoded(text : String) -> @moonjrpc.Message? {
   let json = @json.parse(text) catch { _ => return None }
   try @json.from_json(json) catch {
     _ => None
@@ -10,8 +10,8 @@ fn decoded(text : String) -> @moonjsonrpc.Message? {
 
 ///|
 test "each kind of message comes back the same through JSON" {
-  let messages : Array[@moonjsonrpc.Message] = [
-    Call(id=@moonjsonrpc.Id::int(1), name="m", params=None),
+  let messages : Array[@moonjrpc.Message] = [
+    Call(id=@moonjrpc.Id::int(1), name="m", params=None),
     Call(id=Text("a"), name="m", params=Some(Json::array([]))),
     Call(id=Null, name="m", params=Some(Json::object({}))),
     Notice(name="m", params=None),
@@ -68,18 +68,16 @@ test "a null identifier is a call, a missing one a notice" {
 ///|
 test "the same identifier has the same key whichever side wrote it" {
   assert_eq(
-    @moonjsonrpc.Id::int(5).key(),
-    @moonjsonrpc.Id::Num(5, repr=Some("5")).key(),
+    @moonjrpc.Id::int(5).key(),
+    @moonjrpc.Id::Num(5, repr=Some("5")).key(),
   )
-  assert_true(@moonjsonrpc.Id::int(5).key() != @moonjsonrpc.Id::Text("5").key())
-  assert_true(
-    @moonjsonrpc.Id::Null.key() != @moonjsonrpc.Id::Text("null").key(),
-  )
+  assert_true(@moonjrpc.Id::int(5).key() != @moonjrpc.Id::Text("5").key())
+  assert_true(@moonjrpc.Id::Null.key() != @moonjrpc.Id::Text("null").key())
 }
 
 ///|
 test "invalid keeps a readable identifier and drops the rest" {
-  let refused = fn(id) -> @moonjsonrpc.Message {
+  let refused = fn(id) -> @moonjrpc.Message {
     Refusal(id~, failure={
       code: -32600,
       message: "Invalid Request",
@@ -87,12 +85,12 @@ test "invalid keeps a readable identifier and drops the rest" {
     })
   }
   assert_eq(
-    @moonjsonrpc.Message::invalid(Json::object({ "id": Json::string("a") })),
+    @moonjrpc.Message::invalid(Json::object({ "id": Json::string("a") })),
     refused(Text("a")),
   )
   assert_eq(
-    @moonjsonrpc.Message::invalid(Json::object({ "id": Json::array([]) })),
+    @moonjrpc.Message::invalid(Json::object({ "id": Json::array([]) })),
     refused(Null),
   )
-  assert_eq(@moonjsonrpc.Message::invalid(Json::number(1)), refused(Null))
+  assert_eq(@moonjrpc.Message::invalid(Json::number(1)), refused(Null))
 }

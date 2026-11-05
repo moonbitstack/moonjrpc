@@ -99,9 +99,9 @@ fn Held::take(self : Held, n : Int32, skip : Int32) -> Bytes {
 }
 
 ///|
-fn Held::too_long(self : Held, got : Int32) -> Unit raise @moonjsonrpc.Failed {
+fn Held::too_long(self : Held, got : Int32) -> Unit raise @moonjrpc.Failed {
   if got > self.limit {
-    raise @moonjsonrpc.TooLong(limit=self.limit, got=got.to_int64())
+    raise @moonjrpc.TooLong(limit=self.limit, got=got.to_int64())
   }
 }
 
@@ -171,27 +171,27 @@ priv struct ContentLength {
 ///|
 /// The `Content-Length` of a header block. The name is matched in any case; the other headers, such
 /// as `Content-Type`, do not change how the body is read.
-fn length_of(headers : Bytes) -> Int64 raise @moonjsonrpc.Failed {
+fn length_of(headers : Bytes) -> Int64 raise @moonjrpc.Failed {
   for line in text_of(headers).split("\r\n") {
     guard line.find(":") is Some(at) else {
-      raise @moonjsonrpc.Malformed("header without a colon: \{line}")
+      raise @moonjrpc.Malformed("header without a colon: \{line}")
     }
     if line[:at].to_lower() == "content-length" {
       let digits = line[at + 1:].trim(chars=" \t")
       guard !digits.is_empty() && digits.length() <= 10 else {
-        raise @moonjsonrpc.Malformed("bad Content-Length: \{line}")
+        raise @moonjrpc.Malformed("bad Content-Length: \{line}")
       }
       let mut length = 0L
       for digit in digits {
         guard digit is ('0'..<='9') else {
-          raise @moonjsonrpc.Malformed("bad Content-Length: \{line}")
+          raise @moonjrpc.Malformed("bad Content-Length: \{line}")
         }
         length = length * 10 + (digit.to_int() - '0'.to_int()).to_int64()
       }
       return length
     }
   }
-  raise @moonjsonrpc.Malformed("no Content-Length")
+  raise @moonjrpc.Malformed("no Content-Length")
 }
 
 ///|
@@ -207,7 +207,7 @@ impl Frames for ContentLength with fn read(self) {
           if held.length() == 0 {
             return None
           }
-          raise @moonjsonrpc.Malformed("the input ended inside the headers")
+          raise @moonjrpc.Malformed("the input ended inside the headers")
         }
       }
     }
@@ -217,12 +217,12 @@ impl Frames for ContentLength with fn read(self) {
   held.too_long(end)
   let length = length_of(held.take(end, mark.length()))
   if length > held.limit.to_int64() {
-    raise @moonjsonrpc.TooLong(limit=held.limit, got=length)
+    raise @moonjrpc.TooLong(limit=held.limit, got=length)
   }
   let length = length.to_int()
   while held.length() < length {
     if !held.fill() {
-      raise @moonjsonrpc.Malformed("the input ended inside a message")
+      raise @moonjrpc.Malformed("the input ended inside a message")
     }
   }
   Some(text_of(held.take(length, 0)))

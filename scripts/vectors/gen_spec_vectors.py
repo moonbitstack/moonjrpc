@@ -14,7 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / "src/spec_vectors_test.mbt"
 EXPECTED = 15
 
-request = urllib.request.Request(URL, headers={"User-Agent": "moonjsonrpc-vectors"})
+request = urllib.request.Request(URL, headers={"User-Agent": "moonjrpc-vectors"})
 page = urllib.request.urlopen(request, timeout=60).read().decode()
 section = page[page.index('id="examples"') : page.index('id="extensions"')]
 blocks = [

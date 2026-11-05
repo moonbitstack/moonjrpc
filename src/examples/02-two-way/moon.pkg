@@ -2,8 +2,8 @@
 supported_targets = "+native"
 
 import {
-  "moonbitstack/moonjsonrpc",
-  "moonbitstack/moonjsonrpc/peer",
+  "moonbitstack/moonjrpc",
+  "moonbitstack/moonjrpc/peer",
   "moonbitlang/async",
   "moonbitlang/async/io",
 }

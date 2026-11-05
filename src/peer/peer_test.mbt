@@ -1,8 +1,8 @@
 ///|
 /// Two peers joined by a pair of pipes, both reading, for as long as `body` runs.
 async fn joined(
-  left : @moonjsonrpc.Methods,
-  right : @moonjsonrpc.Methods,
+  left : @moonjrpc.Methods,
+  right : @moonjrpc.Methods,
   body : async (@peer.Peer, @peer.Peer) -> Unit,
   timeout_ms~ : Int32? = Some(2000),
 ) -> Unit {
@@ -29,8 +29,8 @@ async fn joined(
 }
 
 ///|
-fn methods() -> @moonjsonrpc.Methods {
-  @moonjsonrpc.Methods::new()
+fn methods() -> @moonjrpc.Methods {
+  @moonjrpc.Methods::new()
 }
 
 ///|
@@ -46,7 +46,7 @@ async test "a call gets its result, and a bare number for params goes out invali
       Json::number(42),
     )
     let refused = try a.call("double", params=Json::number(21)) catch {
-      @moonjsonrpc.Failed(failure) => failure.code
+      @moonjrpc.Failed(failure) => failure.code
       _ => 0
     } noraise {
       _ => 0
@@ -76,12 +76,10 @@ async test "both sides call in the same conversation, one inside the other" {
 ///|
 async test "the other side's error object raises Failed, an unknown method too" {
   let right = methods()
-  right.call("no", _ => {
-    @moonjsonrpc.fail(7, "said no", data=Json::string("why"))
-  })
+  right.call("no", _ => @moonjrpc.fail(7, "said no", data=Json::string("why")))
   joined(methods(), right, async fn(a, _) {
     let code = try a.call("no") catch {
-      @moonjsonrpc.Failed(failure) => {
+      @moonjrpc.Failed(failure) => {
         assert_eq(failure.data, Some(Json::string("why")))
         failure.code
       }
@@ -91,7 +89,7 @@ async test "the other side's error object raises Failed, an unknown method too" 
     }
     assert_eq(code, 7)
     let code = try a.call("nobody") catch {
-      @moonjsonrpc.Failed(failure) => failure.code
+      @moonjrpc.Failed(failure) => failure.code
       _ => 0
     } noraise {
       _ => 0
@@ -110,7 +108,7 @@ async test "a slow answer raises TimedOut, comes in late unnoticed, and the next
   right.call("quick", _ => Json::number(2))
   joined(methods(), right, async fn(a, _) {
     let timed_out = try a.call("slow", timeout_ms=Some(10)) catch {
-      @moonjsonrpc.TimedOut(name~, limit~) => {
+      @moonjrpc.TimedOut(name~, limit~) => {
         assert_eq(name, "slow")
         limit
       }
@@ -243,7 +241,7 @@ async test "the other side going away raises Closed in whoever is waiting, and l
     group.spawn_bg(() => ignore(out_reads.read_all()))
     let waiting = group.spawn(async fn() {
       try a.call("never") catch {
-        @moonjsonrpc.Closed(name~) => name
+        @moonjrpc.Closed(name~) => name
         _ => "other"
       } noraise {
         _ => "answered"
@@ -253,14 +251,14 @@ async test "the other side going away raises Closed in whoever is waiting, and l
     in_writes.close()
     assert_eq(waiting.wait(), "never")
     let later = try a.call("later") catch {
-      @moonjsonrpc.Closed(name~) => name
+      @moonjrpc.Closed(name~) => name
       _ => "other"
     } noraise {
       _ => "answered"
     }
     assert_eq(later, "later")
     let told = try a.notify("later") catch {
-      @moonjsonrpc.Closed(name~) => name
+      @moonjrpc.Closed(name~) => name
       _ => "other"
     } noraise {
       _ => "told"
@@ -274,7 +272,7 @@ async test "the other side going away raises Closed in whoever is waiting, and l
 /// Feed `input` to a peer and return what it writes back, one reply to a line.
 async fn exchange(
   input : Array[String],
-  methods~ : @moonjsonrpc.Methods = methods(),
+  methods~ : @moonjrpc.Methods = methods(),
   batch~ : Bool = true,
 ) -> Array[Json] {
   let (reads, in_writes) = @io.pipe()
@@ -348,7 +346,7 @@ async test "a handler waiting on a call of its own hears Closed when the input c
   let peer : Ref[@peer.Peer?] = Ref(None)
   right.call("c", async fn(_) {
     peer.val.unwrap().call("who", timeout_ms=None) catch {
-      @moonjsonrpc.Closed(name~) => Json::string("closed on \{name}")
+      @moonjrpc.Closed(name~) => Json::string("closed on \{name}")
       _ => Json::string("other")
     }
   })
@@ -430,7 +428,7 @@ async test "cancelling run ends it and tells whoever is waiting" {
     let running = group.spawn(allow_failure=true, () => a.run())
     let waiting = group.spawn(async fn() {
       try a.call("never") catch {
-        @moonjsonrpc.Closed(_) => "closed"
+        @moonjrpc.Closed(_) => "closed"
         _ => "other"
       } noraise {
         _ => "answered"

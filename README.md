@@ -1,9 +1,9 @@
-# moonjsonrpc
+# moonjrpc
 
 JSON-RPC 2.0 for MoonBit: messages, a method table, two-way calls and framing.
 
 ```bash
-moon add moonbitstack/moonjsonrpc
+moon add moonbitstack/moonjrpc
 ```
 
 ## Answer calls
@@ -11,9 +11,9 @@ moon add moonbitstack/moonjsonrpc
 A method table takes one body and gives back one body, with the errors the specification asks for. Use it where a request and its answer are one exchange, such as an HTTP POST.
 
 ```moonbit
-let methods = @moonjsonrpc.Methods::new()
+let methods = @moonjrpc.Methods::new()
 methods.typed("sum", (numbers : Array[Int]) => numbers.fold(init=0, (a, b) => a + b))
-methods.call("no", _ => @moonjsonrpc.fail(7, "said no"))
+methods.call("no", _ => @moonjrpc.fail(7, "said no"))
 methods.notice("log", params => logged.push(params))
 
 let answer = methods.body(request_body) // None when there is nothing to send

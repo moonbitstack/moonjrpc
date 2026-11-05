@@ -1,7 +1,7 @@
 // Two-way JSON-RPC over any transport: either side may call the other.
 
 import {
-  "moonbitstack/moonjsonrpc",
+  "moonbitstack/moonjrpc",
   "moonbitlang/async",
   "moonbitlang/async/aqueue",
   "moonbitlang/async/io",
@@ -11,8 +11,8 @@ import {
 }
 
 import {
-  "moonbitstack/moonjsonrpc",
-  "moonbitstack/moonjsonrpc/peer",
+  "moonbitstack/moonjrpc",
+  "moonbitstack/moonjrpc/peer",
   "moonbitlang/async",
   "moonbitlang/async/aqueue",
   "moonbitlang/async/io",

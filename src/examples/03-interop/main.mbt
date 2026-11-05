@@ -4,16 +4,14 @@ suberror Boom {
 }
 
 ///|
-fn methods(peer : Ref[@peer.Peer?]) -> @moonjsonrpc.Methods {
-  let methods = @moonjsonrpc.Methods::new()
+fn methods(peer : Ref[@peer.Peer?]) -> @moonjrpc.Methods {
+  let methods = @moonjrpc.Methods::new()
   let logged = []
   methods.typed("sum", (numbers : Array[Int32]) => {
     numbers.fold(init=0, (a, b) => a + b)
   })
   methods.call("echo", params => params.unwrap_or(Json::null()))
-  methods.call("no", _ => {
-    @moonjsonrpc.fail(7, "said no", data=Json::string("why"))
-  })
+  methods.call("no", _ => @moonjrpc.fail(7, "said no", data=Json::string("why")))
   methods.call("boom", _ => raise Boom)
   methods.notice("log", params => logged.push(params.unwrap_or(Json::null())))
   methods.call("logged", _ => Json::array(logged))

@@ -1,10 +1,10 @@
 ///|
 async fn main {
-  let methods = @moonjsonrpc.Methods::new()
+  let methods = @moonjrpc.Methods::new()
   methods.typed("sum", (numbers : Array[Int32]) => {
     numbers.fold(init=0, (a, b) => a + b)
   })
-  methods.call("no", _ => @moonjsonrpc.fail(7, "said no"))
+  methods.call("no", _ => @moonjrpc.fail(7, "said no"))
   let call =
     #|{"jsonrpc":"2.0","id":1,"method":"sum","params":[1,2,3]}
   let refused =

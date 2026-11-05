@@ -52,7 +52,7 @@ async test "lines: blank lines, carriage returns and a last line with no newline
 async test "lines: limit, on both sides" {
   assert_eq(read_all_lines("aaaa\n", limit=8), ["aaaa"])
   let got = try read_all_lines("aaaaaaaaaaaaaaaaaaaa\n", limit=8) catch {
-    @moonjsonrpc.TooLong(limit~, got~) => {
+    @moonjrpc.TooLong(limit~, got~) => {
       assert_eq(limit, 8)
       assert_true(got > 0L)
       "too long"
@@ -64,7 +64,7 @@ async test "lines: limit, on both sides" {
   assert_eq(got, "too long")
   // No newline ever comes: this is the case that would otherwise take all the memory there is.
   let got = try read_all_lines("aaaaaaaaaaaaaaaaaaaa", limit=8) catch {
-    @moonjsonrpc.TooLong(_) => "too long"
+    @moonjrpc.TooLong(_) => "too long"
     _ => "other"
   } noraise {
     _ => "read"
@@ -174,7 +174,7 @@ async test "content_length: what cannot be read raises Malformed" {
   for case in cases {
     let (input, want) = case
     let got = try read_all_framed(@utf8.encode(input)) catch {
-      @moonjsonrpc.Malformed(reason) => reason
+      @moonjrpc.Malformed(reason) => reason
       _ => "other"
     } noraise {
       _ => "read"
@@ -188,7 +188,7 @@ async test "content_length: limit, on both sides" {
   let input = @utf8.encode("Content-Length: 4\r\n\r\n1234")
   assert_eq(read_all_framed(input, limit=64), ["1234"])
   let got = try read_all_framed(input, limit=3) catch {
-    @moonjsonrpc.TooLong(limit~, got~) => {
+    @moonjrpc.TooLong(limit~, got~) => {
       assert_eq(limit, 3)
       got
     }
@@ -200,7 +200,7 @@ async test "content_length: limit, on both sides" {
   // The headers fit and the body does not, so only the declared length can trip this.
   let long = @utf8.encode("Content-Length: 40\r\n\r\n\{pattern(40)}")
   let got = try read_all_framed(long, limit=30) catch {
-    @moonjsonrpc.TooLong(got~, ..) => got
+    @moonjrpc.TooLong(got~, ..) => got
     _ => -1L
   } noraise {
     _ => -2L
@@ -210,7 +210,7 @@ async test "content_length: limit, on both sides" {
     "Content-Length: 1\r\nX: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   )
   let got = try read_all_framed(unending, limit=8) catch {
-    @moonjsonrpc.TooLong(_) => "too long"
+    @moonjrpc.TooLong(_) => "too long"
     _ => "other"
   } noraise {
     _ => "read"
@@ -270,7 +270,7 @@ async test "content_length: a message far longer than the first read, and many s
 async test "two peers talk over content_length" {
   let (right_reads, left_writes) = @io.pipe()
   let (left_reads, right_writes) = @io.pipe()
-  let right = @moonjsonrpc.Methods::new()
+  let right = @moonjrpc.Methods::new()
   right.call("猫", _ => Json::string("喵"))
   let a = @peer.Peer::new(@peer.content_length(left_reads, left_writes))
   let b = @peer.Peer::new(

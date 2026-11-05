@@ -1,15 +1,16 @@
-name = "moonbitstack/moonjsonrpc"
+name = "moonbitstack/moonjrpc"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 
-repository = "https://github.com/moonbitstack/moonjsonrpc"
+repository = "https://github.com/moonbitstack/moonjrpc"
 
 license = "Apache-2.0"
 
 keywords = [
   "json-rpc",
+  "jrpc",
   "jsonrpc",
   "rpc",
   "json",

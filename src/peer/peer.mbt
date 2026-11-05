@@ -12,11 +12,11 @@ pub let timeout_ms : Int32 = 60000
 /// handler returns. Start a task for that instead.
 pub struct Peer {
   frames : &Frames
-  methods : @moonjsonrpc.Methods
+  methods : @moonjrpc.Methods
   timeout_ms : Int32?
   batch : Bool
   lock : @async.Mutex
-  waiting : Map[String, (String, @aqueue.Queue[@moonjsonrpc.Message])]
+  waiting : Map[String, (String, @aqueue.Queue[@moonjrpc.Message])]
   mut next : Int64
   mut closed : Bool
 }
@@ -26,7 +26,7 @@ pub struct Peer {
 /// protocols that forbid batches.
 pub fn Peer::new(
   frames : &Frames,
-  methods~ : @moonjsonrpc.Methods = @moonjsonrpc.Methods::new(),
+  methods~ : @moonjrpc.Methods = @moonjrpc.Methods::new(),
   timeout_ms~ : Int32? = Some(timeout_ms),
   batch~ : Bool = true,
 ) -> Peer {
@@ -50,7 +50,7 @@ async fn Peer::write(self : Peer, text : String) -> Unit {
 }
 
 ///|
-async fn Peer::send(self : Peer, message : @moonjsonrpc.Message) -> Unit {
+async fn Peer::send(self : Peer, message : @moonjrpc.Message) -> Unit {
   self.write(message.to_json().stringify())
 }
 
@@ -65,45 +65,45 @@ pub async fn Peer::call(
   timeout_ms~ : Int32? = self.timeout_ms,
 ) -> Json {
   if self.closed {
-    raise @moonjsonrpc.Closed(name~)
+    raise @moonjrpc.Closed(name~)
   }
   self.next += 1
-  let id = @moonjsonrpc.Id::int(self.next)
-  let queue : @aqueue.Queue[@moonjsonrpc.Message] = @aqueue.Queue::Queue(
+  let id = @moonjrpc.Id::int(self.next)
+  let queue : @aqueue.Queue[@moonjrpc.Message] = @aqueue.Queue::Queue(
     kind=@aqueue.Kind::Unbounded,
   )
   self.waiting[id.key()] = (name, queue)
   defer self.waiting.remove(id.key())
-  self.send(@moonjsonrpc.Message::Call(id~, name~, params~))
+  self.send(@moonjrpc.Message::Call(id~, name~, params~))
   let answer = match timeout_ms {
     None => queue.get()
     Some(limit) =>
       match @async.with_timeout_opt(limit, () => queue.get()) {
         Some(answer) => answer
-        None => raise @moonjsonrpc.TimedOut(name~, limit~)
+        None => raise @moonjrpc.TimedOut(name~, limit~)
       }
   }
   match answer {
     Reply(result~, ..) => result
-    Refusal(failure~, ..) => raise @moonjsonrpc.Failed(failure)
-    _ => raise @moonjsonrpc.Closed(name~)
+    Refusal(failure~, ..) => raise @moonjrpc.Failed(failure)
+    _ => raise @moonjrpc.Closed(name~)
   }
 }
 
 ///|
 pub async fn Peer::notify(self : Peer, name : String, params? : Json) -> Unit {
   if self.closed {
-    raise @moonjsonrpc.Closed(name~)
+    raise @moonjrpc.Closed(name~)
   }
-  self.send(@moonjsonrpc.Message::Notice(name~, params~))
+  self.send(@moonjrpc.Message::Notice(name~, params~))
 }
 
 ///|
 /// Hand a reply to its caller. One nobody is waiting for is dropped: the wait may have given up.
 fn Peer::settle(
   self : Peer,
-  id : @moonjsonrpc.Id,
-  answer : @moonjsonrpc.Message,
+  id : @moonjrpc.Id,
+  answer : @moonjrpc.Message,
 ) -> Unit {
   if self.waiting.get(id.key()) is Some((_, queue)) {
     ignore(queue.try_put(answer) catch { _ => false })
@@ -116,7 +116,7 @@ fn Peer::shut(self : Peer) -> Unit {
   self.closed = true
   for _, waiting in self.waiting {
     let (name, queue) = waiting
-    queue.close(error=@moonjsonrpc.Closed(name~))
+    queue.close(error=@moonjrpc.Closed(name~))
   }
 }
 
@@ -128,12 +128,12 @@ fn Peer::take_batch(
   items : Array[Json],
 ) -> Unit {
   guard self.batch && !items.is_empty() else {
-    self.answer_later(group, @moonjsonrpc.Message::invalid(Json::null()))
+    self.answer_later(group, @moonjrpc.Message::invalid(Json::null()))
     return
   }
   let rest : Array[Json] = []
   for item in items {
-    let message : @moonjsonrpc.Message? = try @json.from_json(item) catch {
+    let message : @moonjrpc.Message? = try @json.from_json(item) catch {
       _ => None
     } noraise {
       message => Some(message)
@@ -160,7 +160,7 @@ fn Peer::take_batch(
 fn Peer::answer_later(
   self : Peer,
   group : @async.TaskGroup[Unit],
-  message : @moonjsonrpc.Message,
+  message : @moonjrpc.Message,
 ) -> Unit {
   group.spawn_bg(allow_failure=true, () => self.send(message))
 }
@@ -171,9 +171,9 @@ async fn Peer::take(
   group : @async.TaskGroup[Unit],
   json : Json,
 ) -> Unit {
-  let message : @moonjsonrpc.Message = @json.from_json(json) catch {
+  let message : @moonjrpc.Message = @json.from_json(json) catch {
     _ => {
-      self.answer_later(group, @moonjsonrpc.Message::invalid(json))
+      self.answer_later(group, @moonjrpc.Message::invalid(json))
       return
     }
   }
@@ -198,7 +198,7 @@ pub async fn Peer::run(self : Peer) -> Unit {
     while self.frames.read() is Some(text) {
       let json = @json.parse(text, preserve_number_repr=true) catch {
         _ => {
-          self.answer_later(group, @moonjsonrpc.Message::unreadable())
+          self.answer_later(group, @moonjrpc.Message::unreadable())
           continue
         }
       }

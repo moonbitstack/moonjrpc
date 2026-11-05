@@ -4,7 +4,7 @@ async fn main {
   let (agent_reads, editor_writes) = @io.pipe()
   let (editor_reads, agent_writes) = @io.pipe()
 
-  let editor_methods = @moonjsonrpc.Methods::new()
+  let editor_methods = @moonjrpc.Methods::new()
   editor_methods.call("read_file", _ => Json::string("hello from the editor"))
   editor_methods.notice("update", params => {
     println("update: \{params.unwrap().stringify()}")
@@ -14,7 +14,7 @@ async fn main {
     methods=editor_methods,
   )
 
-  let agent_methods = @moonjsonrpc.Methods::new()
+  let agent_methods = @moonjrpc.Methods::new()
   let agent : Ref[@peer.Peer?] = Ref(None)
   agent_methods.call("prompt", async fn(_) {
     let peer = agent.val.unwrap()

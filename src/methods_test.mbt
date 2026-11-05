@@ -1,14 +1,14 @@
 ///|
 /// The methods section 7 of the specification assumes.
-fn spec_methods() -> @moonjsonrpc.Methods {
-  let methods = @moonjsonrpc.Methods::new()
+fn spec_methods() -> @moonjrpc.Methods {
+  let methods = @moonjrpc.Methods::new()
   methods.call("subtract", params => {
     let (minuend, subtrahend) = match params {
       Some(Array([Number(a, ..), Number(b, ..)])) => (a, b)
       Some(
         Object({ "minuend": Number(a, ..), "subtrahend": Number(b, ..), .. })
       ) => (a, b)
-      _ => @moonjsonrpc.fail(@moonjsonrpc.invalid_params, "Invalid params")
+      _ => @moonjrpc.fail(@moonjrpc.invalid_params, "Invalid params")
     }
     Json::number(minuend - subtrahend)
   })
@@ -48,7 +48,7 @@ async test "every example in the specification" {
 
 ///|
 async test "typed: parameters decode, or -32602 with the reason" {
-  let methods = @moonjsonrpc.Methods::new()
+  let methods = @moonjrpc.Methods::new()
   methods.typed("double", (n : Int32) => n * 2)
   let good =
     #|{"jsonrpc":"2.0","id":1,"method":"double","params":[21]}
@@ -74,10 +74,8 @@ async test "typed: parameters decode, or -32602 with the reason" {
 
 ///|
 async test "a raised Failed goes out as it is, with its data" {
-  let methods = @moonjsonrpc.Methods::new()
-  methods.call("no", _ => {
-    @moonjsonrpc.fail(7, "said no", data=Json::string("why"))
-  })
+  let methods = @moonjrpc.Methods::new()
+  methods.call("no", _ => @moonjrpc.fail(7, "said no", data=Json::string("why")))
   let answer = methods.answer(Call(id=Text("a"), name="no", params=None))
   assert_eq(
     answer,
@@ -99,7 +97,7 @@ suberror Secret {
 ///|
 async test "any other error is -32603 with no detail, and on_error hears it" {
   let heard = []
-  let methods = @moonjsonrpc.Methods::new(on_error=(name, _) => heard.push(name))
+  let methods = @moonjrpc.Methods::new(on_error=(name, _) => heard.push(name))
   methods.call("boom", _ => raise Secret)
   let answer = methods.answer(Call(id=Text("a"), name="boom", params=None))
   assert_eq(
@@ -118,7 +116,7 @@ async test "any other error is -32603 with no detail, and on_error hears it" {
 ///|
 async test "a notice never answers, even when it fails, and on_error hears it" {
   let heard = []
-  let methods = @moonjsonrpc.Methods::new(on_error=(name, _) => heard.push(name))
+  let methods = @moonjrpc.Methods::new(on_error=(name, _) => heard.push(name))
   methods.notice("boom", _ => raise Secret)
   assert_eq(methods.answer(Notice(name="boom", params=None)), None)
   assert_eq(methods.answer(Notice(name="nobody", params=None)), None)
@@ -127,7 +125,7 @@ async test "a notice never answers, even when it fails, and on_error hears it" {
 
 ///|
 async test "a call to a notice-only name is -32601, and registering again replaces" {
-  let methods = @moonjsonrpc.Methods::new()
+  let methods = @moonjrpc.Methods::new()
   methods.notice("n", _ => ())
   guard methods.answer(Call(id=Null, name="n", params=None))
     is Some(Refusal(failure~, ..)) else {
@@ -144,7 +142,7 @@ async test "a call to a notice-only name is -32601, and registering again replac
 
 ///|
 async test "responses are not answered" {
-  let methods = @moonjsonrpc.Methods::new()
+  let methods = @moonjrpc.Methods::new()
   assert_eq(methods.answer(Reply(id=Text("a"), result=Json::null())), None)
   let reply =
     #|{"jsonrpc":"2.0","id":1,"result":1}
@@ -170,7 +168,7 @@ async test "batch=false: an array is -32600, a single message still goes through
 
 ///|
 async test "an identifier comes back exactly as it was written" {
-  let methods = @moonjsonrpc.Methods::new()
+  let methods = @moonjrpc.Methods::new()
   methods.call("c", _ => Json::null())
   for id in ["12345678901234567890", "1.5", "0", "-3", "1.0", "1e2"] {
     let answer = methods.body(
@@ -182,7 +180,7 @@ async test "an identifier comes back exactly as it was written" {
 
 ///|
 async test "an invalid message with a readable identifier keeps it" {
-  let methods = @moonjsonrpc.Methods::new()
+  let methods = @moonjrpc.Methods::new()
   let invalid =
     #|{"jsonrpc":"2.0","id":5,"method":3}
   let refused =
