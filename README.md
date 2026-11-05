@@ -65,6 +65,16 @@ pub(open) trait Frames {
 
 The HTTP shape is not here, because each protocol has its own: MCP answers on the POST's SSE stream, ACP on a GET stream, A2A in the POST's body. They build it on `Methods` and `Peer`.
 
+## Skill
+
+An [Agent Skill](https://mooncakes.io/skills) for this library is released with each version, at the same version number:
+
+```bash
+moonx moonbit-community/skills download moonbitstack/moonjrpc --extract ./moonjrpc-skill
+```
+
+The source is `docs/skills/moonjrpc/SKILL.md`, which also ships inside the module.
+
 ## Conformance
 
 - Every example in section 7 of the specification, regenerated from the page by `scripts/vectors/gen_spec_vectors.py`.
