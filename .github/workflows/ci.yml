@@ -87,4 +87,4 @@ jobs:
       - name: vscode-jsonrpc and json-rpc-2.0, both ways
         run: |
           moon build src/examples/03-interop --target native
-          node scripts/interop/run.mjs _build/native/debug/build/examples/03-interop/03-interop
+          node scripts/interop/run.mjs "$(find _build/native/debug/build -type f \( -name 03-interop -o -name 03-interop.exe \) | head -n 1)"

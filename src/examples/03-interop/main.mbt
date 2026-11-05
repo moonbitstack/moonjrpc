@@ -32,21 +32,20 @@ fn methods(peer : Ref[@peer.Peer?]) -> @moonjsonrpc.Methods {
 async fn main {
   let peer : Ref[@peer.Peer?] = Ref(None)
   let table = methods(peer)
-  match @env.args()[1] {
-    "body" =>
+  let serve = async fn(frames : &@peer.Frames) {
+    let one = @peer.Peer::new(frames, methods=table)
+    peer.val = Some(one)
+    one.run()
+  }
+  match @env.args() {
+    [_, "body", ..] =>
       while @stdio.stdin.read_until("\n") is Some(line) {
         let answer = table.body(line.trim(chars="\r"))
         @stdio.stdout.write(answer.unwrap_or("null") + "\n")
       }
-    mode => {
-      let frames = if mode == "lines" {
-        @peer.lines(@stdio.stdin, @stdio.stdout)
-      } else {
-        @peer.content_length(@stdio.stdin, @stdio.stdout)
-      }
-      let one = @peer.Peer::new(frames, methods=table)
-      peer.val = Some(one)
-      one.run()
-    }
+    [_, "lines", ..] => serve(@peer.lines(@stdio.stdin, @stdio.stdout))
+    [_, "content-length", ..] =>
+      serve(@peer.content_length(@stdio.stdin, @stdio.stdout))
+    _ => println("usage: 03-interop lines|content-length|body")
   }
 }
