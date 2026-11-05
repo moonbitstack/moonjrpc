@@ -14,7 +14,7 @@ A method table takes one body and gives back one body, with the errors the speci
 let methods = @moonjsonrpc.Methods::new()
 methods.typed("sum", (numbers : Array[Int]) => numbers.fold(init=0, (a, b) => a + b))
 methods.call("no", _ => @moonjsonrpc.fail(7, "said no"))
-methods.notice("log", params => println(params))
+methods.notice("log", params => logged.push(params))
 
 let answer = methods.body(request_body) // None when there is nothing to send
 ```
@@ -71,6 +71,6 @@ The HTTP shape is not here, because each protocol has its own: MCP answers on th
 - `scripts/interop/run.mjs`, in CI: `vscode-jsonrpc` over `content_length` and `json-rpc-2.0` over `lines`, calling both ways.
 - The same 17 bodies through `json-rpc-2.0` and `Methods::body`. Three differ, and the check fails if that changes: a method that is not a string, where the specification's own example answers -32600 and theirs answers -32601 or nothing, and a null body, where theirs throws.
 
-## Licence
+## License
 
 Apache-2.0.
