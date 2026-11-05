@@ -1,2 +1,1 @@
-// What this package implements, and a first-hand link to the specification it
-// implements. A package without that link is not finished.
+// JSON-RPC 2.0 messages and the method table. No I/O here. https://www.jsonrpc.org/specification
