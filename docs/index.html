@@ -69,6 +69,8 @@
 methods.typed("sum", (numbers : Array[Int32]) =&gt; {
   numbers.fold(init=0, (a, b) =&gt; a + b)
 })
+let request =
+  #|{"jsonrpc":"2.0","id":1,"method":"sum","params":[1,2,3]}
 let answer = methods.body(request)</code></pre>
     </div>
     <div>

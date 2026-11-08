@@ -20,11 +20,27 @@ A method table takes one body and gives back one body, with the errors the speci
 
 ```moonbit
 let methods = @moonjrpc.Methods::new()
-methods.typed("sum", (numbers : Array[Int32]) => numbers.fold(init=0, (a, b) => a + b))
-methods.call("no", _ => @moonjrpc.fail(7, "said no"))
-methods.notice("log", params => logged.push(params))
+methods.typed("sum", (numbers : Array[Int32]) => {
+  numbers.fold(init=0, (a, b) => a + b)
+})
+let request =
+  #|{"jsonrpc":"2.0","id":1,"method":"sum","params":[1,2,3]}
+let answer = methods.body(request)
+let want = #|{"jsonrpc":"2.0","id":1,"result":6}
+assert_eq(answer, Some(want))
+```
 
-let answer = methods.body(request_body) // None when there is nothing to send
+The answer is `None` when there is nothing to send, which is what a notice gets. A handler that waits for something is written `async fn(params) { ... }`; one that does not is an arrow, as above.
+
+`fail` answers with an error object of your choosing; the rest come from the library.
+
+```moonbit
+methods.call("no", _ => @moonjrpc.fail(7, "said no", data=Json::string("why")))
+let refused =
+  #|{"jsonrpc":"2.0","id":1,"method":"no"}
+let said = methods.body(refused)
+let error = #|{"jsonrpc":"2.0","id":1,"error":{"code":7,"message":"said no","data":"why"}}
+assert_eq(said, Some(error))
 ```
 
 | Input | Answer |
@@ -42,11 +58,19 @@ let answer = methods.body(request_body) // None when there is nothing to send
 `@peer` is for transports that stay open, where either side may call the other.
 
 ```moonbit
-let peer = @peer.Peer::new(@peer.lines(@stdio.stdin, @stdio.stdout), methods~)
+let (here_reads, there_writes) = @io.pipe()
+let (there_reads, here_writes) = @io.pipe()
+let here = @peer.Peer::new(@peer.lines(here_reads, here_writes), methods~)
+let there = @peer.Peer::new(@peer.lines(there_reads, there_writes), methods~)
+
 @async.with_task_group(async fn(group) {
-  group.spawn_bg(no_wait=true, () => peer.run())
-  let root = peer.call("roots/list")
-  peer.notify("log", params=root)
+  group.spawn_bg(no_wait=true, () => here.run())
+  group.spawn_bg(no_wait=true, () => there.run())
+  let roots = there.call("sum", params=Json::array([Json::number(1.0), Json::number(2.0)]))
+  assert_eq(roots.stringify(), "3")
+  here_writes.close()
+  there_writes.close()
+  group.return_immediately(())
 })
 ```
 
@@ -72,6 +96,12 @@ pub(open) trait Frames {
 ```
 
 The HTTP shape is not here, because each protocol has its own: MCP answers on the POST's SSE stream, ACP on a GET stream, A2A in the POST's body. They build it on `Methods` and `Peer`.
+
+## Limits
+
+- `@peer.timeout_ms`, 60 seconds, is how long a call waits when no other limit is given.
+- `@peer.limit`, 64 MiB, is the longest message `lines` and `content_length` take unless another is passed.
+- A batch is answered in one array that leaves the notices out; an empty one is refused with -32600.
 
 ## Skill
 
