@@ -286,3 +286,9 @@ async test "two peers talk over content_length" {
     group.return_immediately(())
   })
 }
+
+///|
+test "the default limits: 64 MiB to a message, 60 seconds to a call" {
+  assert_eq(@peer.limit, 67_108_864)
+  assert_eq(@peer.timeout_ms, 60_000)
+}

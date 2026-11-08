@@ -187,3 +187,40 @@ async test "an invalid message with a readable identifier keeps it" {
     #|{"jsonrpc":"2.0","id":5,"error":{"code":-32600,"message":"Invalid Request"}}
   assert_eq(@json.parse(methods.body(invalid).unwrap()), @json.parse(refused))
 }
+
+///|
+async test "an empty body is -32700, and a value that is not a message is -32600" {
+  let methods = @moonjrpc.Methods::new()
+  let unreadable =
+    #|{"jsonrpc":"2.0","id":null,"error":{"code":-32700,"message":"Parse error"}}
+  assert_eq(@json.parse(methods.body("").unwrap()), @json.parse(unreadable))
+  let invalid =
+    #|{"jsonrpc":"2.0","id":null,"error":{"code":-32600,"message":"Invalid Request"}}
+  for text in ["null", "3", "\"text\"", "true"] {
+    assert_eq(@json.parse(methods.body(text).unwrap()), @json.parse(invalid))
+  }
+}
+
+///|
+async test "a batch of notices alone has nothing to send, and every notice ran" {
+  let methods = @moonjrpc.Methods::new()
+  let listened = []
+  methods.notice("log", params => listened.push(params))
+  let notices =
+    #|[{"jsonrpc":"2.0","method":"log","params":[1]},{"jsonrpc":"2.0","method":"log","params":[2]}]
+  assert_eq(methods.body(notices), None)
+  assert_eq(listened.length(), 2)
+}
+
+///|
+async test "typed with the parameters left out is -32602, not an empty list" {
+  let methods = @moonjrpc.Methods::new()
+  methods.typed("count", (numbers : Array[Int32]) => numbers.length())
+  let bare =
+    #|{"jsonrpc":"2.0","id":3,"method":"count"}
+  guard @json.parse(methods.body(bare).unwrap())
+    is Object({ "error": Object({ "code": Number(code, ..), .. }), .. }) else {
+    abort("no error object")
+  }
+  assert_eq(code, -32602)
+}
