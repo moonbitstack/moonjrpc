@@ -209,7 +209,7 @@
 <section class="item" id="moonjrpc-peer-peer-run">
 <h3><span class="kind">fn</span><a href="#moonjrpc-peer-peer-run">Peer::run</a></h3>
 <pre><code class="mbt">pub async fn Peer::run(self : Peer) -&gt; Unit</code></pre>
-<p>Read until the other side closes. Calls still running are waited for, so a client that writes its requests and closes its end still gets its answers; cancel this task to stop sooner.</p>
+<p>Read until the other side closes. Calls still running are waited for, so a client that writes its requests and closes its end still gets its answers; cancel this task to stop sooner. Close the transport after this task has returned: a call woken in the round it is cancelled still writes its answer.</p>
 </section>
 <section class="item" id="moonjrpc-peer-content_length">
 <h3><span class="kind">fn</span><a href="#moonjrpc-peer-content_length">content_length</a></h3>
