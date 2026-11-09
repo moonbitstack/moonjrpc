@@ -36,10 +36,10 @@ async test "guide: call both ways" {
         #|["the file says","hello"]
       ),
     )
-    editor_writes.close()
-    agent_writes.close()
     group.return_immediately(())
   })
+  editor_writes.close()
+  agent_writes.close()
 }
 
 ///|
@@ -68,10 +68,10 @@ async test "guide: errors from a call" {
       _ => "answered"
     }
     inspect(said, content="slow took over 10 ms")
-    editor_writes.close()
-    agent_writes.close()
     group.return_immediately(())
   })
+  editor_writes.close()
+  agent_writes.close()
 }
 
 ///|

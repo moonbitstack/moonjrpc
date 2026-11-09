@@ -138,10 +138,10 @@ async fn Pair::run(
     group.spawn_bg(no_wait=true, () => left.run())
     group.spawn_bg(no_wait=true, () => right.run())
     body(left)
-    left_writes.close()
-    right_writes.close()
     group.return_immediately(())
   })
+  left_writes.close()
+  right_writes.close()
 }
 
 ///|

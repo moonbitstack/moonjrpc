@@ -281,10 +281,10 @@ async test "two peers talk over content_length" {
     group.spawn_bg(no_wait=true, () => a.run())
     group.spawn_bg(no_wait=true, () => b.run())
     assert_eq(a.call("猫"), Json::string("喵"))
-    left_writes.close()
-    right_writes.close()
     group.return_immediately(())
   })
+  left_writes.close()
+  right_writes.close()
 }
 
 ///|

@@ -68,11 +68,13 @@ let there = @peer.Peer::new(@peer.lines(there_reads, there_writes), methods~)
   group.spawn_bg(no_wait=true, () => there.run())
   let roots = there.call("sum", params=Json::array([Json::number(1.0), Json::number(2.0)]))
   assert_eq(roots.stringify(), "3")
-  here_writes.close()
-  there_writes.close()
   group.return_immediately(())
 })
+here_writes.close()
+there_writes.close()
 ```
+
+The pipes close after the task group returns: a call woken in the round the peers stop still writes its answer.
 
 | Error from `Peer::call` | Meaning |
 |:--|:--|

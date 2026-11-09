@@ -33,8 +33,8 @@ async fn main {
     group.spawn_bg(no_wait=true, () => editor.run())
     group.spawn_bg(no_wait=true, () => agent.val.unwrap().run())
     println(editor.call("prompt").stringify())
-    editor_writes.close()
-    agent_writes.close()
     group.return_immediately(())
   })
+  editor_writes.close()
+  agent_writes.close()
 }

@@ -193,6 +193,8 @@ async fn Peer::take(
 ///|
 /// Read until the other side closes. Calls still running are waited for, so a client that writes its
 /// requests and closes its end still gets its answers; cancel this task to stop sooner.
+/// Close the transport after this task has returned: a call woken in the round it is cancelled
+/// still writes its answer.
 pub async fn Peer::run(self : Peer) -> Unit {
   defer self.shut()
   @async.with_task_group(async fn(group) {

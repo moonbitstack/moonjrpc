@@ -22,10 +22,10 @@ async fn joined(
     group.spawn_bg(no_wait=true, () => a.run())
     group.spawn_bg(no_wait=true, () => b.run())
     body(a, b)
-    left_writes.close()
-    right_writes.close()
     group.return_immediately(())
   })
+  left_writes.close()
+  right_writes.close()
 }
 
 ///|
@@ -119,6 +119,28 @@ async test "a slow answer raises TimedOut, comes in late unnoticed, and the next
     assert_eq(timed_out, 10)
     @async.sleep(150)
     assert_eq(a.call("quick"), Json::number(2))
+  })
+}
+
+///|
+async test "a call woken in the round the peers stop writes before the pipes close" {
+  let gate : @aqueue.Queue[Unit] = @aqueue.Queue::Queue(
+    kind=@aqueue.Kind::Unbounded,
+  )
+  let right = methods()
+  right.call("slow", async fn(_) {
+    gate.get()
+    Json::null()
+  })
+  joined(methods(), right, async fn(a, _) {
+    let answered = try {
+      ignore(a.call("slow", timeout_ms=Some(10)))
+      true
+    } catch {
+      _ => false
+    }
+    assert_false(answered)
+    gate.put(())
   })
 }
 

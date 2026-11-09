@@ -63,10 +63,10 @@ async test {
     group.spawn_bg(no_wait=true, () => there.run())
     let roots = there.call("roots/list")
     assert_eq(roots.stringify(), "[\"/\"]")
-    here_writes.close()
-    there_writes.close()
     group.return_immediately(())
   })
+  here_writes.close()
+  there_writes.close()
 }
 ```
 
