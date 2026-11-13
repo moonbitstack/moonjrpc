@@ -120,6 +120,7 @@ The source is `docs/skills/moonjrpc/SKILL.md`, which also ships inside the modul
 - Every example in section 7 of the specification, regenerated from the page by `scripts/vectors/gen_spec_vectors.py`.
 - `scripts/interop/run.mjs`, in CI: `vscode-jsonrpc` over `content_length` and `json-rpc-2.0` over `lines`, calling both ways.
 - The same 17 bodies through `json-rpc-2.0` and `Methods::body`. Three differ, and the check fails if that changes: a method that is not a string, where the specification's own example answers -32600 and theirs answers -32601 or nothing, and a null body, where theirs throws.
+- The JSON text is read and written by `moonjson`, our own JSON family — strict RFC 8259, so a document with a trailing comma or a comment is a parse error (-32700). A number identifier keeps the text it was written in, past 2^53.
 
 ## License
 
