@@ -124,13 +124,13 @@ pub async fn Methods::body(
   text : StringView,
   batch~ : Bool = true,
 ) -> String? {
-  let json = @json.parse(text, preserve_number_repr=true) catch {
-    _ => return Some(Message::unreadable().to_json().stringify())
+  let json = @moonjson.loads(text, @moonjson.strict) catch {
+    _ => return Some(@moonjson.dumps(Message::unreadable().to_json()))
   }
   match json {
     Array(items) => {
       guard batch && !items.is_empty() else {
-        return Some(Message::invalid(Json::null()).to_json().stringify())
+        return Some(@moonjson.dumps(Message::invalid(Json::null()).to_json()))
       }
       let out = []
       for item in items {
@@ -141,9 +141,9 @@ pub async fn Methods::body(
       if out.is_empty() {
         None
       } else {
-        Some(Json::array(out).stringify())
+        Some(@moonjson.dumps(Json::array(out)))
       }
     }
-    one => self.answer_json(one).map(answer => answer.stringify())
+    one => self.answer_json(one).map(answer => @moonjson.dumps(answer))
   }
 }

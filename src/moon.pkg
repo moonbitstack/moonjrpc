@@ -2,6 +2,7 @@
 
 import {
   "moonbitlang/core/json",
+  "moonbitstack/moonjson",
 }
 
 import {

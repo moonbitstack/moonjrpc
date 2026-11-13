@@ -51,7 +51,7 @@ async fn Peer::write(self : Peer, text : String) -> Unit {
 
 ///|
 async fn Peer::send(self : Peer, message : @moonjrpc.Message) -> Unit {
-  self.write(message.to_json().stringify())
+  self.write(@moonjson.dumps(message.to_json()))
 }
 
 ///|
@@ -149,7 +149,7 @@ fn Peer::take_batch(
     return
   }
   group.spawn_bg(allow_failure=true, async fn() {
-    if self.methods.body(Json::array(rest).stringify()) is Some(text) {
+    if self.methods.body(@moonjson.dumps(Json::array(rest))) is Some(text) {
       self.write(text)
     }
   })
@@ -199,7 +199,7 @@ pub async fn Peer::run(self : Peer) -> Unit {
   defer self.shut()
   @async.with_task_group(async fn(group) {
     while self.frames.read() is Some(text) {
-      let json = @json.parse(text, preserve_number_repr=true) catch {
+      let json = @moonjson.loads(text, @moonjson.strict) catch {
         _ => {
           self.answer_later(group, @moonjrpc.Message::unreadable())
           continue
