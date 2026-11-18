@@ -6,7 +6,7 @@ fn spec_methods() -> @moonjrpc.Methods {
     let (minuend, subtrahend) = match params {
       Some(Array([Number(a, ..), Number(b, ..)])) => (a, b)
       Some(
-        Object({ "minuend": Number(a, ..), "subtrahend": Number(b, ..), .. })
+        Object({ "minuend": Number(a, ..), "subtrahend": Number(b, ..), .. }),
       ) => (a, b)
       _ => @moonjrpc.fail(@moonjrpc.invalid_params, "Invalid params")
     }
@@ -65,7 +65,7 @@ async test "typed: parameters decode, or -32602 with the reason" {
       {
         "error": Object({ "code": Number(code, ..), "data": String(_), .. }),
         ..
-      }
+      },
     ) else {
     abort("no reason given")
   }

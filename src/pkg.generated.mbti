@@ -67,7 +67,7 @@ pub(all) enum Message {
   Refusal(id~ : Id, failure~ : Failure)
 }
 pub fn Message::equal(Self, Self) -> Bool
-pub fn Message::from_json(@json.Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Message::from_json(@json.Json, @json.DecodeContext) -> Self raise @json.JsonDecodeError
 pub fn Message::invalid(@json.Json) -> Self
 pub fn Message::not_equal(Self, Self) -> Bool
 pub fn Message::to_json(Self) -> @json.Json

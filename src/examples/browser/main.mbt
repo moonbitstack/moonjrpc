@@ -17,7 +17,7 @@ fn playground() -> @moonjrpc.Methods {
     match params {
       Some(Array([Number(a, ..), Number(b, ..)])) => Json::number(a - b)
       Some(
-        Object({ "minuend": Number(a, ..), "subtrahend": Number(b, ..), .. })
+        Object({ "minuend": Number(a, ..), "subtrahend": Number(b, ..), .. }),
       ) => Json::number(a - b)
       _ => @moonjrpc.fail(@moonjrpc.invalid_params, "Invalid params")
     }
